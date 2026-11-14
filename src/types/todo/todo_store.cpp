@@ -39,6 +39,8 @@ constexpr uint32_t kAlertCheckMs = 5000;
 using AlertSet = std::set<PsString, std::less<PsString>, PsramAllocator<PsString>>;
 AlertSet g_alerted;
 
+void publish_command(const String& entity, const char* action, const char* uid);
+
 void check_due() {
   static uint32_t last_ms = 0;
   const uint32_t now_ms = millis();
@@ -61,10 +63,27 @@ void check_due() {
       g_alerted.insert(key);
       const String entity(item.first.c_str());
       Serial.printf("[Todo] Due: %s item %s\n", entity.c_str(), entry.uid[0] ? "with uid" : "without uid");
-      // One alert per check; the next item follows five seconds later.
-      if (todo_tile_alert(entity, entry.uid)) return;
+      // One alert per check; the next item follows five seconds later. The
+      // Bridge plays the announce chime and a spoken reminder on this panel.
+      if (todo_tile_alert(entity, entry.uid)) {
+        if (entry.uid[0]) publish_command(entity, "announce", entry.uid);
+        return;
+      }
     }
   }
+}
+
+// {base}/cmnd/todo, sealed by the network layer once paired.
+void publish_command(const String& entity, const char* action, const char* uid) {
+  if (!networkManager.isMqttConnected()) return;
+  JsonDocument doc;
+  doc["entity_id"] = entity;
+  doc["action"] = action;
+  doc["uid"] = uid;
+  String body;
+  serializeJson(doc, body);
+  const String topic = mqttTopics.deviceBase() + "/cmnd/todo";
+  networkManager.mqttEnqueuePublish(topic.c_str(), body.c_str(), false);
 }
 
 void refresh(const String& entity) {
@@ -173,14 +192,7 @@ bool complete(const String& entity, const char* uid) {
   bool shown = false;
   for (const todo_items::Item& item : list.items) shown = shown || strcmp(item.uid, uid) == 0;
   if (!shown || !networkManager.isMqttConnected()) return false;
-  JsonDocument doc;
-  doc["entity_id"] = entity;
-  doc["action"] = "complete";
-  doc["uid"] = uid;
-  String body;
-  serializeJson(doc, body);
-  const String topic = mqttTopics.deviceBase() + "/cmnd/todo";
-  networkManager.mqttEnqueuePublish(topic.c_str(), body.c_str(), false);
+  publish_command(entity, "complete", uid);
   todo_items::remove_item(list, uid);
   refresh(entity);
   return true;

@@ -35,7 +35,8 @@ Retained payload (Bridge `todo_items.py`, panel `todo_items.h`):
 
 - `state` is the entity state (the open count, or `"unavailable"`), `f` its
   `supported_features`, `n` the open count Home Assistant reported (can exceed
-  the items sent), `d` the local due day.
+  the items sent), `d` the local due day, `YYYY-MM-DDTHH:MM` when the item
+  has a due time.
 - Bounds: at most 32 items, title 63 bytes, uid 160 bytes (an item with a
   longer uid is sent without `u` and cannot be ticked off), payload 8192
   bytes; the Bridge drops the last items first.
@@ -49,6 +50,13 @@ Command `{base}/cmnd/todo` (sealed once paired, leaf `todo`):
 accepts only a uid it published for that list and only when the list has the
 `UPDATE_TODO_ITEM` feature (4), then calls `todo.update_item` with
 `status: completed`.
+
+Due alert: when an item with a due time becomes due (once per item, only
+within 15 minutes of its due), the panel wakes, opens the popup of a To-do
+tile showing the list with the item marked, and sends
+`{"action":"announce","uid":...}`. The Bridge accepts it only for a published
+item just due, once per item, and plays Home Assistant's announce chime and a
+spoken reminder (preferred Assist pipeline's TTS) on the panel's speaker.
 
 ## Panel
 

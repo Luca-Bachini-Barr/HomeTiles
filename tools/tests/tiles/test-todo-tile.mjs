@@ -33,7 +33,8 @@ assert.match(handlers, /todo_store::forget_except\(cfg\.todos_text\);/);
 assert.match(read('src/network/secure/command_channel_core.h'), /kLeaves\[\] = \{"todo", /);
 const store = read('src/types/todo/todo_store.cpp');
 assert.match(store, /mqttTopics\.deviceBase\(\) \+ "\/cmnd\/todo"/);
-assert.match(store, /doc\["action"\] = "complete";/);
+assert.match(store, /publish_command\(entity, "complete", uid\);/);
+assert.match(store, /publish_command\(entity, "announce", entry\.uid\);/, 'the due alert asks the Bridge for the chime and reminder');
 assert.match(store, /if \(!list\.can_complete\(\)\) return false;/, 'only lists Home Assistant can update');
 
 // Due: date and time instead of Today/Tomorrow, overdue in the alert color,
@@ -48,7 +49,7 @@ assert.match(popup, /lv_label_set_text\(when, todo_text::due_text\(item\)\.c_str
 assert.doesNotMatch(popup, /day_label/, 'no Today/Tomorrow for a due');
 assert.match(popup, /pop\.target\.highlight_uid == item\.uid/);
 assert.match(store, /kAlertWindowMin = 15;/);
-assert.match(store, /if \(todo_tile_alert\(entity, entry\.uid\)\) return;/);
+assert.match(store, /if \(todo_tile_alert\(entity, entry\.uid\)\) \{/);
 const tileSource = read('src/types/todo/todo_tile.cpp');
 assert.match(tileSource, /hide_image_screensaver\(\);\s*powerManager\.wakeFromDisplaySleep\("todo due"\);\s*displayManager\.resetActivityTimer\(\);/);
 
