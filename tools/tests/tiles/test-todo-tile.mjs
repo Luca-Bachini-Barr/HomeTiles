@@ -48,6 +48,13 @@ const popup = read('src/ui/popups/todo/todo_popup.cpp');
 assert.match(popup, /lv_label_set_text\(when, todo_text::due_text\(item\)\.c_str\(\)\);/);
 assert.doesNotMatch(popup, /day_label/, 'no Today/Tomorrow for a due');
 assert.match(popup, /pop\.target\.highlight_uid == item\.uid/);
+// The due alert opens the item itself: title, due, description, Mark done
+// and All items.
+assert.match(popup, /pop\.detail_uid = target\.highlight_uid;/);
+assert.match(popup, /lv_label_set_text\(pop\.detail_text, item\.description\);/);
+assert.match(popup, /todo_text::label\(i18n::TodoLabel::MarkDone\)/);
+assert.match(popup, /todo_text::label\(i18n::TodoLabel::AllItems\)/);
+assert.match(read('src/types/todo/todo_items.h'), /item\.description, sizeof\(item\.description\)/);
 assert.match(store, /kAlertWindowMin = 15;/);
 assert.match(store, /if \(todo_tile_alert\(entity, entry\.uid\)\) \{/);
 const tileSource = read('src/types/todo/todo_tile.cpp');
@@ -78,16 +85,16 @@ assert.match(read('src/web/admin/tiles/layout.js'), /27, 29, 30\]\.includes\(Num
 
 // Translations: eight labels in every language, and the picker's kind name.
 const header = read('src/core/i18n/i18n.h');
-assert.match(header, /const char\* todo_labels\[8\];/);
-assert.match(header, /static_assert\(static_cast<int>\(TodoLabel::Count\) == 8/);
+assert.match(header, /const char\* todo_labels\[10\];/);
+assert.match(header, /static_assert\(static_cast<int>\(TodoLabel::Count\) == 10/);
 const i18n = read('src/core/i18n/i18n.cpp');
 const locales = [...i18n.matchAll(/static const LocaleProfile kLocale(\w+) = \{/g)].map(m => m[1]);
 assert.ok(locales.length >= 8, 'every language');
 for (const lang of locales) {
   const start = i18n.indexOf(`static const LocaleProfile kLocale${lang} = {`);
   const table = i18n.slice(start, i18n.indexOf('\n};', start));
-  const labels = /\n    \{("[^"]+"(?:, "[^"]+"){7})\},\n    \{"[^"]+", "[^"]+", "[^"]*\{query\}/.exec(table);
-  assert.ok(labels, `${lang}: the eight to-do labels before the entity picker labels`);
+  const labels = /\n    \{("[^"]+"(?:, "[^"]+"){9})\},\n    \{"[^"]+", "[^"]+", "[^"]*\{query\}/.exec(table);
+  assert.ok(labels, `${lang}: the ten to-do labels before the entity picker labels`);
   const values = JSON.parse('[' + labels[1] + ']');
   assert.equal((values[3].match(/%u/g) || []).length, 1, `${lang}: open count pattern`);
   assert.equal((values[5].match(/%u/g) || []).length, 1, `${lang}: more pattern`);

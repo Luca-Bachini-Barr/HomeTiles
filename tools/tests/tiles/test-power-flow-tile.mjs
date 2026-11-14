@@ -141,7 +141,7 @@ for (const lang of ['De', 'En', 'Fr', 'Pl', 'Cs', 'Es', 'Sk']) {
   assert.ok(start >= 0, lang);
   const table = i18n.slice(start, i18n.indexOf('"};\n', start) + 3);
   // Right before the entity picker labels (LocaleProfile order).
-  const labels = /\n    \{("[^"]+"(?:, "[^"]+"){8})\},\n(?:    \{"[^"]+"(?:, "[^"]+"){7}\},\n)?    \{"[^"]+", "[^"]+", "[^"]*\{query\}/.exec(table);
+  const labels = /\n    \{("[^"]+"(?:, "[^"]+"){8})\},\n(?:    \{"[^"]+"(?:, "[^"]+"){9}\},\n)?    \{"[^"]+", "[^"]+", "[^"]*\{query\}/.exec(table);
   assert.ok(labels, `${lang}: the nine power flow labels before the entity picker labels`);
   if (lang === 'De') assert.ok(labels[1].startsWith('"Leistungsfluss"') && labels[1].includes('"Titel und Icon anzeigen"') &&
     labels[1].endsWith('"Vorzeichen umkehren"'), labels[1]);

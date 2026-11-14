@@ -24,17 +24,19 @@
 // {"v":1,"state":"2","f":15,"n":2,
 //  "i":[{"u":"a1b2","t":"Buy milk"},{"u":"c3d4","t":"Call the plumber","d":"2026-11-20T15:00"}]}
 //
-// "d" is the local due day, with the time when Home Assistant has one.
+// "d" is the local due day, with the time when Home Assistant has one, "x"
+// the description when the item has one.
 //
 // `valid` false is no payload (or a broken one), `available` false a list
 // Home Assistant does not have or reports unavailable. An item without "u"
 // cannot be ticked off (its uid was too long for the Bridge to send).
 namespace todo_items {
 
-constexpr size_t kMaxPayload = 8192;
+constexpr size_t kMaxPayload = 16384;
 constexpr size_t kMaxItems = 32;
 constexpr size_t kTitleBytes = 63;
 constexpr size_t kUidBytes = 160;
+constexpr size_t kDescriptionBytes = 200;
 // homeassistant.components.todo.TodoListEntityFeature.UPDATE_TODO_ITEM
 constexpr uint32_t kFeatureUpdateItem = 4;
 // Due day of an item without one.
@@ -43,6 +45,7 @@ constexpr int32_t kNoDue = INT32_MIN;
 struct Item {
   char uid[kUidBytes + 1] = {};
   char title[kTitleBytes + 1] = {};
+  char description[kDescriptionBytes + 1] = {};
   // Days since 1970-01-01 in Home Assistant's local time, kNoDue without one.
   int32_t due_day = kNoDue;
   // Minutes after midnight; calendar_events::kAllDay for a due day without
@@ -97,6 +100,7 @@ inline List parse(const char* payload, size_t length) {
       Item item;
       calendar_events::detail::copy_text(entry["t"].as<const char*>(), item.title, sizeof(item.title));
       if (!item.title[0]) continue;
+      calendar_events::detail::copy_text(entry["x"].as<const char*>(), item.description, sizeof(item.description));
       const char* uid = entry["u"].as<const char*>();
       if (uid && strlen(uid) <= kUidBytes) strlcpy(item.uid, uid, sizeof(item.uid));
       int32_t day = 0;

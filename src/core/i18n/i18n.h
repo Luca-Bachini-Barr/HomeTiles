@@ -993,7 +993,7 @@ struct LocaleProfile {
   // The Power flow tile (types/power_flow), PowerFlowLabel order.
   const char* power_flow_labels[9];
   // The To-do tile and popup (types/todo), TodoLabel order.
-  const char* todo_labels[8];
+  const char* todo_labels[10];
 
   // Shared Web Admin entity picker (tiles/entity-picker.js). Order: choose,
   // search, no match ({query}), load failed, try again, clear, none available,
@@ -1051,9 +1051,11 @@ enum class TodoLabel : uint8_t {
   More,  // printf pattern with one %u (items not shown)
   NoData,
   ReadOnly,  // the list cannot update items: nothing can be ticked off
+  MarkDone,  // the item view's button that ticks the item off
+  AllItems,  // the item view's button back to the list
   Count,
 };
-static_assert(static_cast<int>(TodoLabel::Count) == 8, "LocaleProfile::todo_labels size");
+static_assert(static_cast<int>(TodoLabel::Count) == 10, "LocaleProfile::todo_labels size");
 // Index into LocaleProfile::vacuum_labels.
 enum class VacuumLabel : uint8_t {
   Type,

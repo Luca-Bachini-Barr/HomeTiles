@@ -25,6 +25,7 @@
 #include "src/ui/popups/media/media_popup.h"
 #include "src/ui/popups/pin/pin_popup.h"
 #include "src/ui/popups/popup_layout.h"
+#include "src/ui/popups/popup_nav_style.h"
 #include "src/ui/popups/popup_open.h"
 #include "src/ui/popups/popup_shell.h"
 #include "src/ui/popups/popup_surface.h"
@@ -41,6 +42,10 @@ using i18n::TodoLabel;
 constexpr int kContentWidth = popup_layout::kContentWidth;
 constexpr int kContentHeight = popup_layout::kCardHeight - 2 * popup_layout::kCardPad;
 const char* const kDefaultIcon = "format-list-bulleted";
+// The item view's buttons, like the Calendar popup's footer.
+constexpr int kButtonHeight = popup_layout::kNavHeight;
+constexpr int kButtonInsetX = popup_layout::scale(6);
+constexpr int kButtonOffsetY = -popup_layout::scale(6);
 
 struct Popup {
   lv_obj_t* overlay = nullptr;
@@ -50,6 +55,16 @@ struct Popup {
   lv_obj_t* close = nullptr;
   lv_obj_t* list = nullptr;
   lv_obj_t* note = nullptr;
+  // The item view (a due alert opens it): title, due, description, and the
+  // Mark done and All items buttons.
+  lv_obj_t* detail = nullptr;
+  lv_obj_t* detail_title = nullptr;
+  lv_obj_t* detail_due = nullptr;
+  lv_obj_t* detail_text = nullptr;
+  lv_obj_t* done_btn = nullptr;
+  lv_obj_t* list_btn = nullptr;
+  // The item the view shows, "" for the list.
+  String detail_uid;
   TodoPopupTarget target;
   // The uids of the rows shown, by row index (a row's user data).
   String uids[todo_items::kMaxItems];
@@ -206,6 +221,87 @@ void fill_list(const todo_items::List* list) {
   if (highlighted) lv_obj_scroll_to_view(highlighted, LV_ANIM_OFF);
 }
 
+lv_obj_t* make_text_button(lv_align_t align, int x_ofs, lv_event_cb_t cb) {
+  lv_obj_t* btn = lv_button_create(pop.card);
+  lv_obj_set_height(btn, kButtonHeight);
+  lv_obj_set_width(btn, LV_SIZE_CONTENT);
+  lv_obj_set_style_pad_hor(btn, popup_layout::scale(28), 0);
+  lv_obj_set_style_pad_ver(btn, 0, 0);
+  lv_obj_set_style_radius(btn, kButtonHeight / 2, 0);
+  lv_obj_set_style_shadow_opa(btn, LV_OPA_TRANSP, 0);
+  lv_obj_set_style_shadow_opa(btn, LV_OPA_TRANSP, LV_STATE_PRESSED);
+  lv_obj_set_style_anim_time(btn, 0, 0);
+  lv_obj_set_style_transform_width(btn, 0, LV_STATE_PRESSED);
+  lv_obj_set_style_transform_height(btn, 0, LV_STATE_PRESSED);
+  lv_obj_align(btn, align, x_ofs, kButtonOffsetY);
+  lv_obj_set_ext_click_area(btn, popup_layout::scale480(12));
+  lv_obj_add_flag(btn, LV_OBJ_FLAG_PRESS_LOCK);
+  lv_obj_remove_flag(btn, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, nullptr);
+  lv_obj_t* label = lv_label_create(btn);
+  set_label_style(label, lv_color_hex(ui_theme::text()), FONT_UNIT);
+  lv_label_set_text(label, "");
+  lv_obj_center(label);
+  lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
+  return btn;
+}
+
+void on_done(lv_event_t*) {
+  const String uid = pop.detail_uid;
+  const ui_theme::SurfaceScope popup_scope = popup_surface::scope();
+  // The ticked item leaves the list; the popup goes back to it.
+  pop.detail_uid = "";
+  pop.signature = 0;
+  if (!todo_store::complete(pop.target.entity, uid.c_str())) refresh(false);
+}
+
+void on_all_items(lv_event_t*) {
+  const ui_theme::SurfaceScope popup_scope = popup_surface::scope();
+  pop.detail_uid = "";
+  pop.signature = 0;
+  refresh(false);
+  lv_obj_scroll_to_y(pop.list, 0, LV_ANIM_OFF);
+}
+
+// Shows `item` in the item view; the list and the note are hidden.
+void fill_detail(const todo_items::List* list, const todo_items::Item& item) {
+  const calendar_text::Now now = calendar_text::now();
+  lv_label_set_text(pop.detail_title, item.title);
+  const String due = todo_text::due_text(item);
+  lv_label_set_text(pop.detail_due, due.c_str());
+  lv_obj_set_style_text_color(pop.detail_due,
+                              lv_color_hex(todo_text::overdue(item, now) ? alert_color() : ui_theme::text_secondary()), 0);
+  if (due.length()) {
+    lv_obj_remove_flag(pop.detail_due, LV_OBJ_FLAG_HIDDEN);
+  } else {
+    lv_obj_add_flag(pop.detail_due, LV_OBJ_FLAG_HIDDEN);
+  }
+  lv_label_set_text(pop.detail_text, item.description);
+  lv_obj_set_style_text_color(pop.detail_text, lv_color_hex(ui_theme::text()), 0);
+  lv_obj_set_style_text_color(pop.detail_title, lv_color_hex(ui_theme::text()), 0);
+  const lv_color_t icon = lv_color_hex(ui_theme::icon());
+  lv_label_set_text(lv_obj_get_child(pop.done_btn, 0), todo_text::label(i18n::TodoLabel::MarkDone));
+  lv_label_set_text(lv_obj_get_child(pop.list_btn, 0), todo_text::label(i18n::TodoLabel::AllItems));
+  popup_nav_style::style_toggle(pop.done_btn, lv_obj_get_child(pop.done_btn, 0), card_color(), icon, true);
+  popup_nav_style::style_toggle(pop.list_btn, lv_obj_get_child(pop.list_btn, 0), card_color(), icon, false);
+  if (list && list->can_complete() && item.can_tick()) {
+    lv_obj_remove_flag(pop.done_btn, LV_OBJ_FLAG_HIDDEN);
+  } else {
+    lv_obj_add_flag(pop.done_btn, LV_OBJ_FLAG_HIDDEN);
+  }
+  lv_obj_remove_flag(pop.list_btn, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_remove_flag(pop.detail, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_add_flag(pop.list, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_add_flag(pop.note, LV_OBJ_FLAG_HIDDEN);
+}
+
+void hide_detail() {
+  lv_obj_add_flag(pop.detail, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_add_flag(pop.done_btn, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_add_flag(pop.list_btn, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_remove_flag(pop.list, LV_OBJ_FLAG_HIDDEN);
+}
+
 void on_close(lv_event_t* e) {
   const ui_theme::SurfaceScope popup_scope = popup_surface::scope();
   if (lv_event_get_code(e) == LV_EVENT_CLICKED) hide_todo_popup();
@@ -239,6 +335,29 @@ void ensure_popup() {
   lv_obj_align(pop.note, LV_ALIGN_BOTTOM_MID, 0, 0);
   lv_obj_add_flag(pop.note, LV_OBJ_FLAG_HIDDEN);
 
+  // The item view: scrolls when the description is long.
+  const int detail_h = std::max(1, kContentHeight - body_top() - kButtonHeight - popup_layout::scale(20));
+  pop.detail = lv_obj_create(pop.card);
+  lv_obj_remove_style_all(pop.detail);
+  lv_obj_set_pos(pop.detail, 0, body_top());
+  lv_obj_set_size(pop.detail, kContentWidth, detail_h);
+  lv_obj_add_flag(pop.detail, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_set_scroll_dir(pop.detail, LV_DIR_VER);
+  lv_obj_set_scrollbar_mode(pop.detail, LV_SCROLLBAR_MODE_OFF);
+  lv_obj_set_flex_flow(pop.detail, LV_FLEX_FLOW_COLUMN);
+  lv_obj_set_style_pad_row(pop.detail, popup_layout::scale(14), 0);
+  pop.detail_title = make_label(pop.detail, popup_layout::font28(), ui_theme::text());
+  lv_label_set_long_mode(pop.detail_title, LV_LABEL_LONG_WRAP);
+  lv_obj_set_width(pop.detail_title, kContentWidth);
+  pop.detail_due = make_label(pop.detail, popup_layout::font20(), ui_theme::text_secondary());
+  lv_obj_set_width(pop.detail_due, kContentWidth);
+  pop.detail_text = make_label(pop.detail, popup_layout::font20(), ui_theme::text());
+  lv_label_set_long_mode(pop.detail_text, LV_LABEL_LONG_WRAP);
+  lv_obj_set_width(pop.detail_text, kContentWidth);
+  lv_obj_add_flag(pop.detail, LV_OBJ_FLAG_HIDDEN);
+  pop.list_btn = make_text_button(LV_ALIGN_BOTTOM_LEFT, kButtonInsetX, on_all_items);
+  pop.done_btn = make_text_button(LV_ALIGN_BOTTOM_RIGHT, -kButtonInsetX, on_done);
+
   lv_obj_move_foreground(pop.icon);
   lv_obj_move_foreground(pop.title);
   lv_obj_move_foreground(pop.close);
@@ -269,7 +388,20 @@ void refresh(bool show) {
   } else {
     lv_obj_add_flag(pop.note, LV_OBJ_FLAG_HIDDEN);
   }
-  fill_list(list);
+  // The item view while its item is still open; else the list.
+  const todo_items::Item* detail = nullptr;
+  if (pop.detail_uid.length() && list && list->valid && list->available) {
+    for (const todo_items::Item& item : list->items) {
+      if (pop.detail_uid == item.uid) detail = &item;
+    }
+  }
+  if (detail) {
+    fill_detail(list, *detail);
+  } else {
+    pop.detail_uid = "";
+    hide_detail();
+    fill_list(list);
+  }
 
   if (show) {
     pop.open = true;
@@ -307,6 +439,8 @@ void show_todo_popup(const TodoPopupTarget& target) {
   if (!todo_store::valid_entity(target.entity)) return;
   pop.target = target;
   pop.signature = 0;
+  // A due alert opens the item itself (todo_tile_alert).
+  pop.detail_uid = target.highlight_uid;
   if (!todo_tile_alive(target.source)) pop.target.source = nullptr;
   const uint32_t fallback = theme_default_card();
   if (!pop.target.source) tile_icon_source::open_popup_without_tile();
