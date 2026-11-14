@@ -992,6 +992,8 @@ struct LocaleProfile {
   const char* vacuum_states[8];
   // The Power flow tile (types/power_flow), PowerFlowLabel order.
   const char* power_flow_labels[9];
+  // The To-do tile and popup (types/todo), TodoLabel order.
+  const char* todo_labels[8];
 
   // Shared Web Admin entity picker (tiles/entity-picker.js). Order: choose,
   // search, no match ({query}), load failed, try again, clear, none available,
@@ -1003,8 +1005,8 @@ struct LocaleProfile {
   // cover, climate, media_player, weather, camera, lock,
   // alarm_control_panel, number/input_number, select/input_select,
   // datetime/date/time/input_datetime, scene, script, button/input_button,
-  // automation, humidifier, siren, remote, calendar, vacuum.
-  const char* entity_kind_labels[24];
+  // automation, humidifier, siren, remote, calendar, vacuum, todo.
+  const char* entity_kind_labels[25];
   // Icon picker of the tile head and the rules (tiles/tile-head.js). Order:
   // automatic, automatic hint, no icon, no icon hint, no match ({query}),
   // a rule's automatic hint (the tile's own icon stays).
@@ -1039,6 +1041,19 @@ struct LocaleProfile {
 // Index into LocaleProfile::energy_period_labels.
 enum class EnergyPeriodLabel : uint8_t { Year, Month, Week, Count };
 static_assert(static_cast<int>(EnergyPeriodLabel::Count) == 3, "LocaleProfile::energy_period_labels size");
+// Index into LocaleProfile::todo_labels.
+enum class TodoLabel : uint8_t {
+  Type,
+  Entity,
+  AllDone,
+  OpenCount,  // printf pattern with one %u (two or more)
+  OneOpen,
+  More,  // printf pattern with one %u (items not shown)
+  NoData,
+  ReadOnly,  // the list cannot update items: nothing can be ticked off
+  Count,
+};
+static_assert(static_cast<int>(TodoLabel::Count) == 8, "LocaleProfile::todo_labels size");
 // Index into LocaleProfile::vacuum_labels.
 enum class VacuumLabel : uint8_t {
   Type,
@@ -1191,6 +1206,8 @@ const char* weather_tomorrow_label(const char* language_code);
 const char* weather_sensor_label(const char* language_code, uint8_t index);
 const char* power_flow_label(const char* language_code, PowerFlowLabel label);
 const char* vacuum_label(const char* language_code, VacuumLabel label);
+// To-do tile and popup texts (TodoLabel).
+const char* todo_label(const char* language_code, TodoLabel label);
 // A Home Assistant vacuum state ("cleaning", ...) as shown; an unknown one as
 // "unknown".
 const char* vacuum_state_label(const char* language_code, const char* state);

@@ -1,4 +1,5 @@
 #include "src/ui/popups/calendar/calendar_popup.h"
+#include "src/ui/popups/todo/todo_popup.h"
 
 #include <algorithm>
 #include <cstring>
@@ -843,6 +844,7 @@ void show_calendar_popup(const CalendarPopupTarget& target) {
   hide_camera_popup();
   hide_device_popup();
   hide_vacuum_popup();
+  hide_todo_popup();
   const bool same = pop.target.entities == target.entities;
   pop.target = target;
   pop.entity_count = static_cast<uint8_t>(

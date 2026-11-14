@@ -60,6 +60,9 @@ struct HaBridgeConfigData {
   // Calendar tiles (Bridge key calendars; their events come on the
   // additive `events` topic, types/calendar/calendar_store.h).
   String calendars_text;
+  // To-do tiles (Bridge key todos; their open items come on the additive
+  // `items` topic, types/todo/todo_store.h).
+  String todos_text;
   String cameras_text;
   // Image entities released for the screensaver picture (Bridge "images").
   String images_text;
@@ -112,6 +115,8 @@ public:
   bool supportsCalendars() const { return entity_search_ >= 5; }
   // Vacuums, their detail state and commands (Bridge level 6).
   bool supportsVacuums() const { return entity_search_ >= 6; }
+  // To-do lists, their items and commands (Bridge level 7).
+  bool supportsTodos() const { return entity_search_ >= 7; }
   // The live Bridge configuration announced "push": 1. Such a Bridge sends
   // name, unit and icon changes by itself, so the panel's periodic refresh is
   // only a slow safety net. Not stored: 0 until the configuration arrived.

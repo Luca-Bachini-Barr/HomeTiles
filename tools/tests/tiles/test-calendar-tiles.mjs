@@ -129,14 +129,14 @@ for (const name of ['loadCalendarFields', 'saveCalendarFields', 'resetCalendarFi
   assert.ok(adminSource.includes(`function ${name}(`), name);
   extractDeliveredFunction(name);
 }
-assert.match(read('src/web/admin/tiles/entity-picker.js'), /\['remote'\], \['calendar'\], \['vacuum'\]\s*\];/);
-assert.match(read('src/web/admin/tiles/entity-picker.js'), /'energy', 'scenes', 'calendars', 'vacuums'\]\);/);
+assert.match(read('src/web/admin/tiles/entity-picker.js'), /\['remote'\], \['calendar'\], \['vacuum'\], \['todo'\]\s*\];/);
+assert.match(read('src/web/admin/tiles/entity-picker.js'), /'energy', 'scenes', 'calendars', 'vacuums', 'todos'\]\);/);
 assert.match(read('src/web/admin/tiles/import-export.js'), /\} else if \(safeType === 27\) \{/);
 assert.match(read('src/web/admin/tiles/snapshots.js'), /if \(Number\(tile\.type\) === 27 && snapshot\) \{/);
 // The preview's styles (lost once in a merge): the shared Sensor header and the
 // preview body.
 const adminCss = read('src/web/assets/admin.css');
-assert.equal((adminCss.match(/\.switch-bar, \.calendar\)/g) || []).length, 4, 'the Calendar shares the Sensor header styles');
+assert.equal((adminCss.match(/\.switch-bar, \.calendar, \.todo\)/g) || []).length, 4, 'the Calendar shares the Sensor header styles');
 for (const rule of ['.tile.calendar > .calendar-preview-body {', '.calendar-preview-grid.month {', '.calendar-preview-dots > i {']) {
   assert.ok(adminCss.includes(rule), rule);
 }

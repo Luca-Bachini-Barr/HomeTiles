@@ -480,6 +480,17 @@
         updateTilePreview(tab); updateDraft(tab); scheduleAutoSave(tab);
       });
     }
+    // To-do: the list and the popup gesture (types/todo).
+    bindLive(document.getElementById(prefix + '_todo_entity'), 'change', 'todoEntity', () => {
+      maybeFillTitleFromEntity(tab, '_todo_entity');
+      updateTilePreview(tab);
+      updateDraft(tab);
+      scheduleAutoSave(tab);
+    });
+    bindLive(document.getElementById(prefix + '_todo_popup_open_mode'), 'change', 'todoPopupMode', () => {
+      updateDraft(tab);
+      scheduleAutoSave(tab);
+    });
     bindLive(document.getElementById(prefix + '_calendar_popup_open_mode'), 'change', 'calendarPopupMode', () => {
       updateDraft(tab);
       scheduleAutoSave(tab);

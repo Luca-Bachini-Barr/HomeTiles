@@ -1094,6 +1094,12 @@
       if (tile.popup_open_mode !== undefined && tile.popup_open_mode !== null) {
         fd.append('popup_open_mode', tile.popup_open_mode);
       }
+    } else if (safeType === 30) {
+      // The to-do list (types/todo/web.cpp).
+      fd.append('todo_entity', todoEntityOf(tile.sensor_entity || tile.todo_entity || ''));
+      if (tile.popup_open_mode !== undefined && tile.popup_open_mode !== null) {
+        fd.append('popup_open_mode', tile.popup_open_mode);
+      }
     } else if (safeType === 24 || safeType === 25 || safeType === 26 || safeType === 29) {
       const kind = devicePreviewKind(safeType);
       fd.append(kind + '_entity', tile.sensor_entity || tile[kind + '_entity'] || '');

@@ -39,6 +39,7 @@
     const hasMeta = Object.prototype.hasOwnProperty.call(payload, 'editable_values') ||
                     Object.prototype.hasOwnProperty.call(payload, 'device_values') ||
                     Object.prototype.hasOwnProperty.call(payload, 'calendar_values') ||
+                    Object.prototype.hasOwnProperty.call(payload, 'todo_values') ||
                     Object.prototype.hasOwnProperty.call(payload, 'values') ||
                     Object.prototype.hasOwnProperty.call(payload, 'units') ||
                     Object.prototype.hasOwnProperty.call(payload, 'icons') ||
@@ -65,6 +66,8 @@
       deviceValues: payload.device_values || payload.deviceValues || {},
       // Calendar events (types/calendar).
       calendarValues: payload.calendar_values || payload.calendarValues || {},
+      // To-do items (types/todo).
+      todoValues: payload.todo_values || payload.todoValues || {},
       // Weather and media tile states, the payloads their tiles draw.
       weatherValues: payload.weather_values || payload.weatherValues || {},
       mediaValues: payload.media_values || payload.mediaValues || {},

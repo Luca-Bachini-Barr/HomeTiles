@@ -1,6 +1,7 @@
 #include "src/types/value/value_control.h"
 #include "src/types/device/device_control.h"
 #include "src/types/calendar/calendar_store.h"
+#include "src/types/todo/todo_store.h"
 #include "src/ui/navigation/view_navigation.h"
 #include "src/network/mqtt/mqtt_handlers.h"
 #include "src/network/secure/command_channel.h"
@@ -1554,10 +1555,13 @@ static void rebuildDynamicRoutes(std::vector<DynamicSensorRoute>& routes) {
                  {&cfg.datetimes_text, "control"}, {&cfg.locks_text, "detail"},
                  {&cfg.alarm_panels_text, "detail"}, {&cfg.fans_text, "detail"},
                  {&cfg.vacuums_text, "detail"},
+                 // To-do tiles read the open items of every offered list.
+                 {&cfg.todos_text, "items"},
                  // Calendar tiles read the events of every offered calendar.
                  {&cfg.calendars_text, "events"}};
   // Events of calendars the Bridge stopped offering go.
   calendar_store::forget_except(cfg.calendars_text);
+  todo_store::forget_except(cfg.todos_text);
   for (const auto& entry : offered) {
     const String& list = *entry.list;
     int start = 0;
@@ -1759,6 +1763,10 @@ static bool tryHandleDynamicSensor(const char* topic, const char* payload,
       }
       if (route.topic.endsWith("/events")) {
         calendar_store::queue(route.entity_id, payload, payload_len);
+        return true;
+      }
+      if (route.topic.endsWith("/items")) {
+        todo_store::queue(route.entity_id, payload, payload_len);
         return true;
       }
       if (route.entity_id.startsWith("binary_sensor.") &&

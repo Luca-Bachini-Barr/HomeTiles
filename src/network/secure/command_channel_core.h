@@ -687,7 +687,7 @@ inline const char* sealedCommandLeaf(const char* topic, const char* base,
   // Lock and Alarm commands are accepted by the Bridge only sealed; Fan and
   // Vacuum follow the other controls (plain while unpaired). The entity search and
   // the tiles' entities exist only sealed (network/bridge/entity_search.h).
-  static const char* const kLeaves[] = {"scene", "light", "switch", "media", "climate", "cover",
+  static const char* const kLeaves[] = {"todo", "scene", "light", "switch", "media", "climate", "cover",
                                         "camera", "value", "fan", "vacuum", "lock", "alarm", "entities",
                                         "tiles"};
   if (!topic || !base || strncmp(topic, base, base_length) != 0 ||

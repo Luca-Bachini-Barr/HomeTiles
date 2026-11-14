@@ -21,6 +21,7 @@
 #include "src/ui/popups/device/device_popup.h"
 #include "src/ui/popups/vacuum/vacuum_popup.h"
 #include "src/ui/popups/calendar/calendar_popup.h"
+#include "src/ui/popups/todo/todo_popup.h"
 #include "src/ui/popups/energy/energy_popup.h"
 #include "src/ui/popups/light/light_popup.h"
 #include "src/ui/popups/popup_shell.h"
@@ -334,6 +335,7 @@ void follow_open_popup(lv_obj_t* card) {
   device_popup_follow_tile_color(color);
   vacuum_popup_follow_tile_color(color);
   calendar_popup_follow_tile_color(color);
+  todo_popup_follow_tile_color(color);
   sensor_popup_follow_tile_color(color);
   energy_popup_follow_tile_color(color);
   weather_popup_follow_tile_color(color);

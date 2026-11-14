@@ -967,6 +967,9 @@
       if (previewKind === 'calendar' && !normalizeMdiIconName(rawIcon) && !isExplicitlyDisabledValue(rawIcon)) {
         iconName = 'calendar';
       }
+      if (previewKind === 'todo' && !normalizeMdiIconName(rawIcon) && !isExplicitlyDisabledValue(rawIcon)) {
+        iconName = TODO_DEFAULT_ICON;
+      }
       let binarySensorPreviewState = null;
       if (previewKind === 'binary_sensor') {
         binarySensorPreviewState = parseBinarySensorPreviewPayload(
@@ -997,7 +1000,8 @@
                 ? devicePreviewColor(deviceKind, devicePreviewState)
                 : (previewKind === 'binary_sensor'
                   ? binarySensorPreviewColor(binarySensorPreviewState)
-                  : (previewKind === 'calendar' ? calendarPreviewIconColor(tile) : '')))), ruleFill);
+                  : (previewKind === 'calendar' ? calendarPreviewIconColor(tile)
+                    : (previewKind === 'todo' ? todoPreviewIconColor(tile, sensorMeta) : ''))))), ruleFill);
         if (typeof setPreviewRuleFill === 'function') setPreviewRuleFill(el, ruleFill);
         // A matching rule shows its own icon (tile_rule_icon.h); weather
         // icons keep their own.
@@ -1013,6 +1017,8 @@
           titleFromEntity(tile.sensor_entity);
       }
       if (previewKind === 'calendar') displayTitle = calendarPreviewTitle(tile, displayTitle, sensorMeta);
+      const todoTitle = displayTitle;
+      if (previewKind === 'todo') displayTitle = todoPreviewTitle(tile, displayTitle);
       if (displayTitle.length) {
         html += '<div class="tile-title" id="' + tab + '-tile-' + index + '-title">' +
           tileTitleHtml(displayTitle) + '</div>';
@@ -1053,6 +1059,7 @@
       if (previewKind === 'cover') html += coverPreviewExtraHtml(coverPreviewState, Number(tile.span_h) === 0.5);
       if (deviceKind) html += devicePreviewExtraHtml(deviceKind, devicePreviewState, Number(tile.span_h) === 0.5);
       if (previewKind === 'calendar') html += calendarPreviewExtraHtml(tile, sensorMeta);
+      if (previewKind === 'todo') html += todoPreviewExtraHtml(tile, todoTitle, sensorMeta);
       if (previewKind === 'binary_sensor') {
         html += '<div class="tile-value tile-binary-sensor-value ' + (Number(tile.sensor_value_font) ? sensorValueClass : '') + '" id="' +
           tab + '-tile-' + index + '-value">' +

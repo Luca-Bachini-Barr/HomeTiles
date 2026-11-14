@@ -21,6 +21,7 @@
 #include "src/ui/popups/device/device_popup.h"
 #include "src/ui/popups/vacuum/vacuum_popup.h"
 #include "src/ui/popups/calendar/calendar_popup.h"
+#include "src/ui/popups/todo/todo_popup.h"
 #include "src/ui/popups/pin/pin_popup.h"
 
 #include <ctype.h>
@@ -2446,6 +2447,7 @@ void show_climate_popup(const ClimatePopupInit& init) {
   hide_media_popup();
   hide_device_popup();
   hide_vacuum_popup();
+  hide_todo_popup();
   hide_calendar_popup();
 
   if (g_climate_popup && g_climate_popup->overlay &&

@@ -2728,6 +2728,7 @@ async function saveGestureEdge(select) {
     const hasMeta = Object.prototype.hasOwnProperty.call(payload, 'editable_values') ||
                     Object.prototype.hasOwnProperty.call(payload, 'device_values') ||
                     Object.prototype.hasOwnProperty.call(payload, 'calendar_values') ||
+                    Object.prototype.hasOwnProperty.call(payload, 'todo_values') ||
                     Object.prototype.hasOwnProperty.call(payload, 'values') ||
                     Object.prototype.hasOwnProperty.call(payload, 'units') ||
                     Object.prototype.hasOwnProperty.call(payload, 'icons') ||
@@ -2754,6 +2755,8 @@ async function saveGestureEdge(select) {
       deviceValues: payload.device_values || payload.deviceValues || {},
       // Calendar events (types/calendar).
       calendarValues: payload.calendar_values || payload.calendarValues || {},
+      // To-do items (types/todo).
+      todoValues: payload.todo_values || payload.todoValues || {},
       // Weather and media tile states, the payloads their tiles draw.
       weatherValues: payload.weather_values || payload.weatherValues || {},
       mediaValues: payload.media_values || payload.mediaValues || {},
@@ -3048,12 +3051,12 @@ async function saveGestureEdge(select) {
     ['climate'], ['media_player'], ['weather'], ['camera'], ['lock'], ['alarm_control_panel'],
     ['number', 'input_number'], ['select', 'input_select'],
     ['datetime', 'date', 'time', 'input_datetime'], ['scene'], ['script'], ['button', 'input_button'],
-    ['automation'], ['humidifier'], ['siren'], ['remote'], ['calendar'], ['vacuum']
+    ['automation'], ['humidifier'], ['siren'], ['remote'], ['calendar'], ['vacuum'], ['todo']
   ];
   // Lists the Bridge searches (entity_search.py LIST_DOMAINS).
   const ENTITY_REMOTE_LISTS = new Set(['sensors', 'binary_sensors', 'numbers', 'selects', 'datetimes',
     'weathers', 'switches', 'media', 'climates', 'covers', 'cameras', 'images', 'locks', 'alarm_panels', 'fans',
-    'energy', 'scenes', 'calendars', 'vacuums']);
+    'energy', 'scenes', 'calendars', 'vacuums', 'todos']);
   const ENTITY_REMOTE_DELAY_MS = 250;
   const ENTITY_REMOTE_POLL_MS = 120;
   const ENTITY_REMOTE_TIMEOUT_MS = 5000;
@@ -4625,12 +4628,13 @@ async function saveGestureEdge(select) {
   // (tileTypeHasFixedIconColorOnly / tileTypeRulesUseOwnEntity in
   // tile_type_policy.h).
   const ICON_COLOR_FIXED_TYPES = ['2', '4', '8', '9', '10', '18'];
-  const ICON_COLOR_OWN_TYPES = ['1', '5', '12', '14', '15', '17', '19', '20', '21', '22', '23', '24', '25', '26', '29'];
+  const ICON_COLOR_OWN_TYPES = ['1', '5', '12', '14', '15', '17', '19', '20', '21', '22', '23', '24', '25', '26', '29', '30'];
   // The own entity field of each type (pairs, not an object with numeric keys).
   const ICON_COLOR_ENTITY_FIELDS = [['1', '_sensor_entity'], ['5', '_switch_entity'], ['12', '_weather_entity'],
     ['14', '_energy_entity'], ['15', '_media_entity'], ['17', '_climate_entity'], ['19', '_cover_entity'],
     ['20', '_binary_sensor_entity'], ['21', '_number_entity'], ['22', '_select_entity'], ['23', '_datetime_entity'],
-    ['24', '_lock_entity'], ['25', '_alarm_entity'], ['26', '_fan_entity'], ['29', '_vacuum_entity']];
+    ['24', '_lock_entity'], ['25', '_alarm_entity'], ['26', '_fan_entity'], ['29', '_vacuum_entity'],
+    ['30', '_todo_entity']];
   // Domains shown by the Switch tile (tile_icon_source.cpp switch_domain).
   const ICON_COLOR_SWITCH_DOMAINS = ['light', 'switch', 'input_boolean', 'automation', 'fan',
     'humidifier', 'remote', 'siren'];
@@ -6690,7 +6694,7 @@ async function saveGestureEdge(select) {
   // Switch and Cover show their state (tile_geometry::compact_switch,
   // compact_cover).
   function supportsHalfSize(type) {
-    return isCompactSensorType(type) || isEditableValueType(type) || [2, 4, 5, 7, 8, 9, 10, 17, 18, 19, 24, 25, 26, 27, 29].includes(Number(type));
+    return isCompactSensorType(type) || isEditableValueType(type) || [2, 4, 5, 7, 8, 9, 10, 17, 18, 19, 24, 25, 26, 27, 29, 30].includes(Number(type));
   }
   // Every type resizes in half steps from 1x1; only half-size types may be half
   // a row high (mirrors tile_geometry::supported).
@@ -6780,7 +6784,8 @@ async function saveGestureEdge(select) {
     const compactIconTitle = [2, 4, 7, 8, 18].includes(Number(type)) && halfHeight;
     // Half-height Switch: icon, title and state like a compact Sensor.
     // A half-height Calendar: the next event's time and title (compact_calendar).
-    const compactSwitch = [5, 17, 19, 24, 25, 26, 27, 29].includes(Number(type)) && halfHeight;
+    // A half-height To-do: the title and the open count (compact_todo).
+    const compactSwitch = [5, 17, 19, 24, 25, 26, 27, 29, 30].includes(Number(type)) && halfHeight;
     // Number, Select and Date/Time like a compact Sensor.
     const compactEditable = isEditableValueType(type) && halfHeight;
     if (compactEditable) valueFont = editableCompactValueFont(valueFont);
@@ -8000,6 +8005,17 @@ async function saveGestureEdge(select) {
         updateTilePreview(tab); updateDraft(tab); scheduleAutoSave(tab);
       });
     }
+    // To-do: the list and the popup gesture (types/todo).
+    bindLive(document.getElementById(prefix + '_todo_entity'), 'change', 'todoEntity', () => {
+      maybeFillTitleFromEntity(tab, '_todo_entity');
+      updateTilePreview(tab);
+      updateDraft(tab);
+      scheduleAutoSave(tab);
+    });
+    bindLive(document.getElementById(prefix + '_todo_popup_open_mode'), 'change', 'todoPopupMode', () => {
+      updateDraft(tab);
+      scheduleAutoSave(tab);
+    });
     bindLive(document.getElementById(prefix + '_calendar_popup_open_mode'), 'change', 'calendarPopupMode', () => {
       updateDraft(tab);
       scheduleAutoSave(tab);
@@ -8336,6 +8352,7 @@ async function saveGestureEdge(select) {
     if (isEditablePreview(previewKind)) iconEntity = document.getElementById(prefix + '_' + previewKind + '_entity')?.value || '';
     if (deviceKind) iconEntity = document.getElementById(prefix + '_' + deviceKind + '_entity')?.value || '';
     const calendarTile = previewKind === 'calendar' ? calendarTileFromInputs(tab, tileSpan('span_w'), tileSpan('span_h')) : null;
+    const todoTile = previewKind === 'todo' ? todoTileFromInputs(tab, tileSpan('span_w'), tileSpan('span_h')) : null;
     if (type === '2') {
       const alias = document.getElementById(prefix + '_scene_alias')?.value || '';
       iconEntity = sceneEntityOf(alias);
@@ -8375,6 +8392,7 @@ async function saveGestureEdge(select) {
       }
     }
     if (calendarTile && !normalizeMdiIconName(rawIcon) && !isExplicitlyDisabledValue(rawIcon)) iconName = 'calendar';
+    if (todoTile && !normalizeMdiIconName(rawIcon) && !isExplicitlyDisabledValue(rawIcon)) iconName = TODO_DEFAULT_ICON;
     let binarySensorPreviewState = null;
     if (previewKind === 'binary_sensor') {
       binarySensorPreviewState = parseBinarySensorPreviewPayload(
@@ -8481,7 +8499,8 @@ async function saveGestureEdge(select) {
               ? devicePreviewColor(deviceKind, devicePreviewState)
               : (previewKind === 'binary_sensor'
                 ? binarySensorPreviewColor(binarySensorPreviewState)
-                : (calendarTile ? calendarPreviewIconColor(calendarTile) : '')))), ruleFill);
+                : (calendarTile ? calendarPreviewIconColor(calendarTile)
+                  : (todoTile ? todoPreviewIconColor(todoTile) : ''))))), ruleFill);
       if (typeof setPreviewRuleFill === 'function') setPreviewRuleFill(tileElem, ruleFill);
       // A matching rule shows its own icon (tile_rule_icon.h); weather icons
       // keep their own.
@@ -8497,6 +8516,8 @@ async function saveGestureEdge(select) {
         titleFromEntity(cameraEntity);
     }
     if (calendarTile) displayTitle = calendarPreviewTitle(calendarTile, displayTitle);
+    const todoTitle = displayTitle;
+    if (todoTile) displayTitle = todoPreviewTitle(todoTile, displayTitle);
     if (displayTitle) {
       html += '<div class="tile-title" id="' + tileId + '-title">' +
         tileTitleHtml(displayTitle) + '</div>';
@@ -8527,6 +8548,7 @@ async function saveGestureEdge(select) {
     if (previewKind === 'cover') html += coverPreviewExtraHtml(coverPreviewState, halfHeight);
     if (deviceKind) html += devicePreviewExtraHtml(deviceKind, devicePreviewState, halfHeight);
     if (calendarTile) html += calendarPreviewExtraHtml(calendarTile);
+    if (todoTile) html += todoPreviewExtraHtml(todoTile, todoTitle);
     if (previewKind === 'binary_sensor') {
       html += '<div class="tile-value tile-binary-sensor-value ' + (Number(sensorValueFont) ? sensorValueClass : '') + '" id="' +
         tileId + '-value">' +
@@ -10329,6 +10351,12 @@ async function saveGestureEdge(select) {
       if (tile.popup_open_mode !== undefined && tile.popup_open_mode !== null) {
         fd.append('popup_open_mode', tile.popup_open_mode);
       }
+    } else if (safeType === 30) {
+      // The to-do list (types/todo/web.cpp).
+      fd.append('todo_entity', todoEntityOf(tile.sensor_entity || tile.todo_entity || ''));
+      if (tile.popup_open_mode !== undefined && tile.popup_open_mode !== null) {
+        fd.append('popup_open_mode', tile.popup_open_mode);
+      }
     } else if (safeType === 24 || safeType === 25 || safeType === 26 || safeType === 29) {
       const kind = devicePreviewKind(safeType);
       fd.append(kind + '_entity', tile.sensor_entity || tile[kind + '_entity'] || '');
@@ -11342,6 +11370,9 @@ async function saveGestureEdge(select) {
       if (previewKind === 'calendar' && !normalizeMdiIconName(rawIcon) && !isExplicitlyDisabledValue(rawIcon)) {
         iconName = 'calendar';
       }
+      if (previewKind === 'todo' && !normalizeMdiIconName(rawIcon) && !isExplicitlyDisabledValue(rawIcon)) {
+        iconName = TODO_DEFAULT_ICON;
+      }
       let binarySensorPreviewState = null;
       if (previewKind === 'binary_sensor') {
         binarySensorPreviewState = parseBinarySensorPreviewPayload(
@@ -11372,7 +11403,8 @@ async function saveGestureEdge(select) {
                 ? devicePreviewColor(deviceKind, devicePreviewState)
                 : (previewKind === 'binary_sensor'
                   ? binarySensorPreviewColor(binarySensorPreviewState)
-                  : (previewKind === 'calendar' ? calendarPreviewIconColor(tile) : '')))), ruleFill);
+                  : (previewKind === 'calendar' ? calendarPreviewIconColor(tile)
+                    : (previewKind === 'todo' ? todoPreviewIconColor(tile, sensorMeta) : ''))))), ruleFill);
         if (typeof setPreviewRuleFill === 'function') setPreviewRuleFill(el, ruleFill);
         // A matching rule shows its own icon (tile_rule_icon.h); weather
         // icons keep their own.
@@ -11388,6 +11420,8 @@ async function saveGestureEdge(select) {
           titleFromEntity(tile.sensor_entity);
       }
       if (previewKind === 'calendar') displayTitle = calendarPreviewTitle(tile, displayTitle, sensorMeta);
+      const todoTitle = displayTitle;
+      if (previewKind === 'todo') displayTitle = todoPreviewTitle(tile, displayTitle);
       if (displayTitle.length) {
         html += '<div class="tile-title" id="' + tab + '-tile-' + index + '-title">' +
           tileTitleHtml(displayTitle) + '</div>';
@@ -11428,6 +11462,7 @@ async function saveGestureEdge(select) {
       if (previewKind === 'cover') html += coverPreviewExtraHtml(coverPreviewState, Number(tile.span_h) === 0.5);
       if (deviceKind) html += devicePreviewExtraHtml(deviceKind, devicePreviewState, Number(tile.span_h) === 0.5);
       if (previewKind === 'calendar') html += calendarPreviewExtraHtml(tile, sensorMeta);
+      if (previewKind === 'todo') html += todoPreviewExtraHtml(tile, todoTitle, sensorMeta);
       if (previewKind === 'binary_sensor') {
         html += '<div class="tile-value tile-binary-sensor-value ' + (Number(tile.sensor_value_font) ? sensorValueClass : '') + '" id="' +
           tab + '-tile-' + index + '-value">' +
@@ -20145,6 +20180,147 @@ function maybeFillTitleFromSwitch(tab) {
     const weekStart = document.getElementById(tab + '_calendar_week_start');
     if (weekStart) weekStart.value = '255';
     const popup = document.getElementById(tab + '_calendar_popup_open_mode');
+    if (popup) popup.value = '1';
+  }
+  // To-do (30): one Home Assistant to-do list (types/todo/todo_tile.cpp). The
+  // preview mirrors the device: the items payload of /api/sensor_values
+  // todo_values (todo_items.h), the layouts of layout_of() and the words of
+  // TODO_I18N (types/todo/web.cpp).
+  // i18n::TodoLabel order.
+  const TODO_LABEL = {type: 0, entity: 1, allDone: 2, openCount: 3, oneOpen: 4, more: 5, noData: 6, readOnly: 7};
+  const TODO_DEFAULT_ICON = 'format-list-bulleted';
+
+  function todoI18n() { return typeof TODO_I18N === 'object' ? TODO_I18N : {}; }
+  function todoLabel(key, ...args) {
+    let text = String(todoI18n().labels?.[TODO_LABEL[key]] ?? '');
+    for (const arg of args) text = text.replace(/%[us]/, String(arg));
+    return text;
+  }
+
+  // todo_store::valid_entity().
+  function todoEntityOf(value) {
+    const id = String(value || '').trim();
+    return /^todo\.[a-z0-9_]+$/.test(id) ? id : '';
+  }
+
+  // todo_items::parse().
+  function parseTodoPreviewPayload(value) {
+    const out = {valid: false, available: false, features: 0, open: 0, items: []};
+    const text = value === undefined || value === null ? '' : String(value).trim();
+    if (!text.startsWith('{')) return out;
+    let obj;
+    try { obj = JSON.parse(text); } catch (e) { return out; }
+    if (!obj || obj.v !== 1) return out;
+    out.valid = true;
+    out.available = typeof obj.state === 'string' && obj.state !== 'unavailable';
+    out.features = Number.isInteger(obj.f) && obj.f >= 0 ? obj.f : 0;
+    for (const item of Array.isArray(obj.i) ? obj.i.slice(0, 32) : []) {
+      if (!item || typeof item !== 'object') continue;
+      const title = String(item.t || '').trim();
+      if (title) out.items.push({title, uid: typeof item.u === 'string' ? item.u : ''});
+    }
+    out.open = Number.isInteger(obj.n) && obj.n >= out.items.length ? obj.n : out.items.length;
+    return out;
+  }
+
+  function todoPreviewList(tile, meta = sensorMetaCache) {
+    const entity = todoEntityOf(tile.sensor_entity);
+    return entity ? parseTodoPreviewPayload(meta?.todoValues?.[entity] ?? '') : null;
+  }
+
+  // todo_text::count_caption().
+  function todoCountCaption(list) {
+    if (!list || !list.valid) return '--';
+    if (!list.available) return todoLabel('noData');
+    if (!list.open) return todoLabel('allDone');
+    return list.open === 1 ? todoLabel('oneOpen') : todoLabel('openCount', list.open);
+  }
+
+  function todoPreviewLayout(tile) {
+    const w = Number(tile.span_w) || 1, h = Number(tile.span_h) || 1;
+    if (h === 0.5) return 'compact';
+    if (h >= 2) return 'list';
+    return w >= 2 ? 'next' : 'count';
+  }
+
+  // The title the tile shows: none at half height (the chip says it).
+  function todoPreviewTitle(tile, title) {
+    return todoPreviewLayout(tile) === 'compact' ? '' : title;
+  }
+
+  // Bright while something is open, dimmed otherwise (todo_tile.cpp color_icon).
+  function todoPreviewIconColor(tile, meta = sensorMetaCache) {
+    const list = todoPreviewList(tile, meta);
+    return list && list.valid && list.available && list.open ? '' : 'var(--pv-icon-inactive, #9E9E9E)';
+  }
+
+  function todoPreviewExtraHtml(tile, title, meta = sensorMetaCache) {
+    const list = todoPreviewList(tile, meta);
+    const layout = todoPreviewLayout(tile);
+    const caption = todoCountCaption(list);
+    if (layout === 'compact') {
+      return '<div class="tile-title todo-preview-when">' + escapeHtml(title || todoLabel('type')) + '</div>' +
+        '<div class="tile-value todo-preview-what">' + escapeHtml(caption) + '</div>';
+    }
+    if (layout === 'count' || layout === 'next') {
+      let what = '--';
+      if (layout === 'count') {
+        what = list && list.valid && list.available ? String(list.open) : '--';
+      } else if (list && list.valid) {
+        what = !list.available ? todoLabel('noData') : (list.items.length ? list.items[0].title : todoLabel('allDone'));
+      }
+      return '<div class="todo-preview-body ' + layout + '">' +
+        '<div class="todo-preview-what">' + escapeHtml(what) + '</div>' +
+        '<div class="todo-preview-when">' + escapeHtml(caption) + '</div></div>';
+    }
+    let html = '<div class="todo-preview-body list">';
+    if (!list) return html + '<div class="todo-preview-message">--</div></div>';
+    if (!list.valid || !list.available) return html + '<div class="todo-preview-message">' + escapeHtml(todoLabel('noData')) + '</div></div>';
+    if (!list.items.length) return html + '<div class="todo-preview-message">' + escapeHtml(todoLabel('allDone')) + '</div></div>';
+    const fit = Math.max(1, Math.round((Number(tile.span_h) || 2) * 2.5 - 1.5));
+    let rows = Math.min(list.items.length, fit, 12);
+    let more = 0;
+    if (list.open > rows) {
+      if (rows === fit && rows > 1) --rows;
+      more = list.open - rows;
+    }
+    for (let i = 0; i < rows; ++i) {
+      html += '<div class="todo-preview-row"><i class="todo-preview-mark"></i>' +
+        '<span class="todo-preview-title">' + escapeHtml(list.items[i].title) + '</span></div>';
+    }
+    if (more) html += '<div class="todo-preview-row todo-preview-more">' + escapeHtml(todoLabel('more', more)) + '</div>';
+    return html + '</div>';
+  }
+
+  // The tile the live preview draws from the open fields.
+  function todoTileFromInputs(tab, spanW, spanH) {
+    return {
+      sensor_entity: todoEntityOf(document.getElementById(tab + '_todo_entity')?.value || ''),
+      span_w: spanW,
+      span_h: spanH
+    };
+  }
+
+  function loadTodoFields(tab, data) {
+    const input = document.getElementById(tab + '_todo_entity');
+    if (input) input.value = todoEntityOf(data.sensor_entity || data.todo_entity || '');
+    const popup = document.getElementById(tab + '_todo_popup_open_mode');
+    if (popup) popup.value = data.popup_open_mode !== undefined ? String(data.popup_open_mode) : '1';
+    maybeFillTitleFromEntity(tab, '_todo_entity');
+  }
+
+  function saveTodoFields(tab, formData) {
+    const entity = todoEntityOf(document.getElementById(tab + '_todo_entity')?.value || '');
+    formData.append('todo_entity', entity);
+    formData.append('sensor_entity', entity);
+    const popup = document.getElementById(tab + '_todo_popup_open_mode');
+    if (popup) formData.append('popup_open_mode', popup.value || '1');
+  }
+
+  function resetTodoFields(tab) {
+    const input = document.getElementById(tab + '_todo_entity');
+    if (input) input.value = '';
+    const popup = document.getElementById(tab + '_todo_popup_open_mode');
     if (popup) popup.value = '1';
   }
 

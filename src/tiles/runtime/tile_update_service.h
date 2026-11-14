@@ -5,6 +5,7 @@
 #include "src/types/device/device_updates.h"
 #include "src/types/power_flow/flow_updates.h"
 #include "src/types/calendar/calendar_updates.h"
+#include "src/types/todo/todo_updates.h"
 
 // tab_tiles_unified.cpp: recolors icon-and-title tiles from their source entity.
 void process_icon_source_updates();
@@ -29,6 +30,7 @@ inline void process_tile_update_queues() {
   process_editable_updates(drain_all ? 0 : 4);
   process_device_updates(drain_all ? 0 : 4);
   process_calendar_updates(drain_all ? 0 : 2);
+  process_todo_updates(drain_all ? 0 : 2);
   process_weather_update_queue(drain_all ? 0 : 4);
   process_media_update_queue(drain_all ? 0 : 2);
   // Power flow tiles marked by a node state, each redrawn once.
