@@ -21,3 +21,7 @@ lv_obj_t* render_todo_tile(lv_obj_t* parent, int col, int row, const Tile& tile,
 void todo_tiles_refresh(const String& entity);
 // True while `card` is a rendered To-do tile (compared, never dereferenced).
 bool todo_tile_alive(lv_obj_t* card);
+// A due alert (todo_store): wakes the panel and opens the popup of a To-do
+// tile showing `entity`, with the item `uid` marked. False when no tile on
+// this panel shows the list.
+bool todo_tile_alert(const String& entity, const char* uid);

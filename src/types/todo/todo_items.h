@@ -22,7 +22,9 @@
 // nothing here touches LVGL, so host tests run it as it is.
 //
 // {"v":1,"state":"2","f":15,"n":2,
-//  "i":[{"u":"a1b2","t":"Buy milk"},{"u":"c3d4","t":"Call the plumber","d":"2026-11-20"}]}
+//  "i":[{"u":"a1b2","t":"Buy milk"},{"u":"c3d4","t":"Call the plumber","d":"2026-11-20T15:00"}]}
+//
+// "d" is the local due day, with the time when Home Assistant has one.
 //
 // `valid` false is no payload (or a broken one), `available` false a list
 // Home Assistant does not have or reports unavailable. An item without "u"
@@ -43,9 +45,13 @@ struct Item {
   char title[kTitleBytes + 1] = {};
   // Days since 1970-01-01 in Home Assistant's local time, kNoDue without one.
   int32_t due_day = kNoDue;
+  // Minutes after midnight; calendar_events::kAllDay for a due day without
+  // a time.
+  int16_t due_min = calendar_events::kAllDay;
 
   bool can_tick() const { return uid[0] != '\0'; }
   bool has_due() const { return due_day != kNoDue; }
+  bool has_due_time() const { return has_due() && due_min != calendar_events::kAllDay; }
 };
 
 #if CALENDAR_EVENTS_PSRAM
@@ -96,7 +102,10 @@ inline List parse(const char* payload, size_t length) {
       int32_t day = 0;
       int16_t minute = 0;
       const char* due = entry["d"].as<const char*>();
-      if (due && strlen(due) == 10 && calendar_events::parse_stamp(due, day, minute)) item.due_day = day;
+      if (due && (strlen(due) == 10 || strlen(due) == 16) && calendar_events::parse_stamp(due, day, minute)) {
+        item.due_day = day;
+        item.due_min = minute;
+      }
       out.items.push_back(item);
     }
   }

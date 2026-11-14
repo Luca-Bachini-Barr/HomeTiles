@@ -4,10 +4,12 @@
 
 #include <map>
 #include <memory>
+#include <set>
 
 #include "src/core/memory/psram_allocator.h"
 #include "src/network/mqtt/mqtt_topics.h"
 #include "src/network/network_manager.h"
+#include "src/types/todo/todo_text.h"
 #include "src/types/todo/todo_tile.h"
 #include "src/types/todo/todo_updates.h"
 #include "src/ui/popups/todo/todo_popup.h"
@@ -28,6 +30,42 @@ struct Entry {
 using EntryMap = std::map<PsString, Entry, std::less<PsString>, PsramAllocator<std::pair<const PsString, Entry>>>;
 EntryMap g_entries;
 size_t g_pending = 0;
+
+// Due alerts: an item whose due time passed within this window opens its
+// list's popup once ("<entity>|<uid or title>" remembered, bounded).
+constexpr int32_t kAlertWindowMin = 15;
+constexpr size_t kMaxAlerted = 64;
+constexpr uint32_t kAlertCheckMs = 5000;
+using AlertSet = std::set<PsString, std::less<PsString>, PsramAllocator<PsString>>;
+AlertSet g_alerted;
+
+void check_due() {
+  static uint32_t last_ms = 0;
+  const uint32_t now_ms = millis();
+  if (last_ms && now_ms - last_ms < kAlertCheckMs) return;
+  last_ms = now_ms;
+  const calendar_text::Now now = calendar_text::now();
+  if (!now.valid) return;
+  for (auto& item : g_entries) {
+    const todo_items::List* list = item.second.list.get();
+    if (!list || !list->valid || !list->available) continue;
+    for (const todo_items::Item& entry : list->items) {
+      if (!entry.has_due_time()) continue;
+      const int32_t since = (now.today - entry.due_day) * 24 * 60 + (now.minute - entry.due_min);
+      if (since < 0 || since >= kAlertWindowMin) continue;
+      PsString key(item.first);
+      key += "|";
+      key += entry.uid[0] ? entry.uid : entry.title;
+      if (g_alerted.count(key)) continue;
+      if (g_alerted.size() >= kMaxAlerted) g_alerted.clear();
+      g_alerted.insert(key);
+      const String entity(item.first.c_str());
+      Serial.printf("[Todo] Due: %s item %s\n", entity.c_str(), entry.uid[0] ? "with uid" : "without uid");
+      // One alert per check; the next item follows five seconds later.
+      if (todo_tile_alert(entity, entry.uid)) return;
+    }
+  }
+}
 
 void refresh(const String& entity) {
   todo_tiles_refresh(entity);
@@ -78,6 +116,7 @@ void queue(const String& entity, const char* payload, size_t length) {
 }
 
 void process(uint8_t budget) {
+  check_due();
   if (!g_pending) return;
   uint8_t done = 0;
   for (auto& item : g_entries) {

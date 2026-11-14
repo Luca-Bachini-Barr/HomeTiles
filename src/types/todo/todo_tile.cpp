@@ -5,6 +5,8 @@
 #include <cstring>
 
 #include "src/core/config/config_manager.h"
+#include "src/core/display/display_manager.h"
+#include "src/core/power/power_manager.h"
 #include "src/core/i18n/i18n.h"
 #include "src/tiles/config/tile_geometry.h"
 #include "src/tiles/icons/mdi_icons.h"
@@ -15,6 +17,7 @@
 #include "src/types/todo/todo_store.h"
 #include "src/types/todo/todo_text.h"
 #include "src/ui/popups/todo/todo_popup.h"
+#include "src/ui/screensaver/image_screensaver.h"
 #include "src/ui/shared/title_label.h"
 #include "src/ui/shared/tone_color.h"
 #include "src/ui/shared/ui_theme.h"
@@ -253,6 +256,28 @@ bool todo_tile_alive(lv_obj_t* card) {
     if (view->card == card) return true;
   }
   return false;
+}
+
+bool todo_tile_alert(const String& entity, const char* uid) {
+  View* found = nullptr;
+  for (View* view = g_views; view; view = view->next) {
+    if (view->entity != entity || view->grid == GridType::SCREENSAVER) continue;
+    // A tile on the shown page is the best source for the popup's color.
+    if (!found || lv_obj_is_visible(view->card)) found = view;
+  }
+  if (!found) return false;
+  hide_image_screensaver();
+  powerManager.wakeFromDisplaySleep("todo due");
+  displayManager.resetActivityTimer();
+  TodoPopupTarget target;
+  target.entity = found->entity;
+  target.title = found->title;
+  target.icon_name = found->icon_name;
+  target.icon_visible = found->icon_visible;
+  target.source = found->card;
+  target.highlight_uid = uid ? uid : "";
+  show_todo_popup(target);
+  return true;
 }
 
 lv_obj_t* render_todo_tile(lv_obj_t* parent, int col, int row, const Tile& tile, uint8_t index, GridType grid_type) {

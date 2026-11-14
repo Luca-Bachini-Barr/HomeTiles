@@ -9,6 +9,7 @@
 #include "src/tiles/runtime/tile_icon_source.h"
 #include "src/tiles/runtime/tile_renderer_fonts.h"
 #include "src/tiles/runtime/tile_renderer_shared.h"
+#include "src/types/calendar/calendar_model.h"
 #include "src/types/calendar/calendar_text.h"
 #include "src/types/todo/todo_store.h"
 #include "src/types/todo/todo_text.h"
@@ -77,6 +78,9 @@ lv_obj_t* make_label(lv_obj_t* parent, const lv_font_t* font, uint32_t color) {
   return label;
 }
 
+// The alert color for overdue and alerted items: the Calendar's orange.
+uint32_t alert_color() { return calendar_model::calendar_color(3, ui_theme::light()); }
+
 uint32_t hash_text(uint32_t hash, const char* text) {
   for (const char* c = text ? text : ""; *c; ++c) hash = (hash ^ static_cast<uint8_t>(*c)) * 16777619u;
   return (hash ^ 0xFF) * 16777619u;
@@ -116,17 +120,22 @@ void fill_list(const todo_items::List* list) {
   if (text) {
     signature = hash_text(signature, text);
   } else {
+    const calendar_text::Now clock_now = calendar_text::now();
     for (const todo_items::Item& item : list->items) {
       signature = hash_text(signature, item.title);
       signature = hash_text(signature, item.uid);
       signature ^= static_cast<uint32_t>(item.due_day) * 2654435761u;
+      signature ^= static_cast<uint32_t>(item.due_min + 1) * 40503u;
+      signature ^= todo_text::overdue(item, clock_now) ? 0x3Cu : 0;
     }
+    signature = hash_text(signature, pop.target.highlight_uid.c_str());
     signature ^= list->open_count * 40503u;
   }
   signature ^= tickable ? 0x77u : 0;
   signature ^= ui_theme::light() ? 0x55u : 0;
   const calendar_text::Now now = calendar_text::now();
   signature ^= static_cast<uint32_t>(now.valid ? now.today : -1) * 97u;
+  lv_obj_t* highlighted = nullptr;
   if (signature == pop.signature) return;
   pop.signature = signature;
   lv_obj_clean(pop.list);
@@ -153,6 +162,12 @@ void fill_list(const todo_items::List* list) {
     lv_obj_set_style_radius(row, popup_layout::scale(12), 0);
     lv_obj_set_style_bg_color(row, lv_color_mix(lv_color_hex(ui_theme::text()), card_color(), LV_OPA_10), LV_STATE_PRESSED);
     lv_obj_set_style_bg_opa(row, LV_OPA_COVER, LV_STATE_PRESSED);
+    if (pop.target.highlight_uid.length() && pop.target.highlight_uid == item.uid) {
+      // The item a due alert opened the popup for.
+      lv_obj_set_style_bg_color(row, lv_color_mix(lv_color_hex(alert_color()), card_color(), LV_OPA_30), 0);
+      lv_obj_set_style_bg_opa(row, LV_OPA_COVER, 0);
+      highlighted = row;
+    }
     if (tickable && item.can_tick()) {
       pop.uids[i] = item.uid;
       lv_obj_add_flag(row, LV_OBJ_FLAG_CLICKABLE);
@@ -175,9 +190,9 @@ void fill_list(const todo_items::List* list) {
     lv_label_set_text(name, item.title);
     lv_obj_align(name, LV_ALIGN_LEFT_MID, text_x, due ? -lv_font_get_line_height(small) / 2 : 0);
     if (due) {
-      lv_obj_t* when = make_label(row, small, ui_theme::text_secondary());
+      lv_obj_t* when = make_label(row, small, todo_text::overdue(item, now) ? alert_color() : ui_theme::text_secondary());
       lv_obj_set_width(when, std::max<int32_t>(1, kContentWidth - text_x - popup_layout::scale(4)));
-      lv_label_set_text(when, calendar_text::day_label(item.due_day, now).c_str());
+      lv_label_set_text(when, todo_text::due_text(item).c_str());
       lv_obj_align(when, LV_ALIGN_LEFT_MID, text_x, line / 2 + popup_layout::scale(2));
     }
     y += row_h;
@@ -188,6 +203,7 @@ void fill_list(const todo_items::List* list) {
     lv_label_set_text(more, todo_text::more(list->open_count - static_cast<uint32_t>(list->items.size())).c_str());
     lv_obj_set_pos(more, text_x, y + popup_layout::scale(8));
   }
+  if (highlighted) lv_obj_scroll_to_view(highlighted, LV_ANIM_OFF);
 }
 
 void on_close(lv_event_t* e) {
@@ -257,7 +273,7 @@ void refresh(bool show) {
 
   if (show) {
     pop.open = true;
-    lv_obj_scroll_to_y(pop.list, 0, LV_ANIM_OFF);
+    if (!pop.target.highlight_uid.length()) lv_obj_scroll_to_y(pop.list, 0, LV_ANIM_OFF);
     lv_obj_remove_flag(pop.card, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(pop.overlay, LV_OBJ_FLAG_CLICKABLE);
     viewNavigationPopupShown(pop.card, pop.target.entity.c_str());

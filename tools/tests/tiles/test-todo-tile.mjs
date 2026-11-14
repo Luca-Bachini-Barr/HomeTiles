@@ -36,6 +36,22 @@ assert.match(store, /mqttTopics\.deviceBase\(\) \+ "\/cmnd\/todo"/);
 assert.match(store, /doc\["action"\] = "complete";/);
 assert.match(store, /if \(!list\.can_complete\(\)\) return false;/, 'only lists Home Assistant can update');
 
+// Due: date and time instead of Today/Tomorrow, overdue in the alert color,
+// and a due alert that wakes the panel and marks the item.
+const items = read('src/types/todo/todo_items.h');
+assert.match(items, /strlen\(due\) == 10 \|\| strlen\(due\) == 16/, 'due day with or without a time');
+const text = read('src/types/todo/todo_text.h');
+assert.match(text, /inline String due_text\(const todo_items::Item& item\)/);
+assert.match(text, /inline bool overdue\(const todo_items::Item& item, const calendar_text::Now& now\)/);
+const popup = read('src/ui/popups/todo/todo_popup.cpp');
+assert.match(popup, /lv_label_set_text\(when, todo_text::due_text\(item\)\.c_str\(\)\);/);
+assert.doesNotMatch(popup, /day_label/, 'no Today/Tomorrow for a due');
+assert.match(popup, /pop\.target\.highlight_uid == item\.uid/);
+assert.match(store, /kAlertWindowMin = 15;/);
+assert.match(store, /if \(todo_tile_alert\(entity, entry\.uid\)\) return;/);
+const tileSource = read('src/types/todo/todo_tile.cpp');
+assert.match(tileSource, /hide_image_screensaver\(\);\s*powerManager\.wakeFromDisplaySleep\("todo due"\);\s*displayManager\.resetActivityTimer\(\);/);
+
 // Popups close each other; the To-do popup is preloaded and hidden on navigation.
 for (const popup of ['calendar', 'camera', 'climate', 'cover', 'device', 'energy', 'light', 'media', 'pin',
   'sensor', 'vacuum', 'weather']) {

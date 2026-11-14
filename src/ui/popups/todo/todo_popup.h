@@ -7,7 +7,8 @@
 // header and lifecycle): the list's open items, each with an empty circle; a
 // tap ticks the item off (todo_store::complete) and it leaves the list. A
 // list Home Assistant cannot update shows its items with a note instead. One
-// cached popup, refilled for the tile that opens it.
+// cached popup, refilled for the tile that opens it. Overdue items show
+// their due in the alert color; a due alert marks its item.
 struct TodoPopupTarget {
   String entity;
   String title;
@@ -16,6 +17,8 @@ struct TodoPopupTarget {
   bool icon_visible = true;
   // The opening tile card (popup color and header disc), may be null.
   lv_obj_t* source = nullptr;
+  // An item to mark and scroll to (the due alert, todo_store), "" for none.
+  String highlight_uid;
 };
 
 void show_todo_popup(const TodoPopupTarget& target);
