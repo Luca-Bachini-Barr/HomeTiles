@@ -239,7 +239,7 @@ int main() {
   // A long answer (beyond the other Assist commands' 256 bytes) is cut at a
   // character boundary.
   std::string longAnswer;
-  for (int i = 0; i < 1000; ++i) longAnswer += "\xC3\xA9";
+  for (int i = 0; i < 700; ++i) longAnswer += "\xC3\xA9";  // 1400 bytes, under the payload limit
   assert(parse("{\"v\":1,\"op\":\"view\",\"id\":\"0123456789abcdef\",\"stage\":\"responding\","
                "\"answer\":\"" + longAnswer + "\"}") == ParseResult::Ok);
   assert(strlen(u.answer) == kMaxAnswerBytes - 1 && strlen(u.answer) % 2 == 0);
