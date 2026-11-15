@@ -38,10 +38,11 @@ assert.doesNotMatch(sleep, /process_idle_media_updates\(\);/,
   'The sleep path retains its existing drain policy');
 
 const queueTypes = ['sensor', 'switch', 'climate', 'cover',
-  'binary_sensor', 'editable', 'device', 'calendar', 'weather', 'media'];
+  'binary_sensor', 'editable', 'device', 'calendar', 'todo', 'weather', 'media'];
 const queueFunction = type => type === 'editable' ? 'process_editable_updates'
   : type === 'device' ? 'process_device_updates'
-  : type === 'calendar' ? 'process_calendar_updates' : `process_${type}_update_queue`;
+  : type === 'calendar' ? 'process_calendar_updates'
+  : type === 'todo' ? 'process_todo_updates' : `process_${type}_update_queue`;
 const declarations = queueTypes.map(type =>
   `void ${queueFunction(type)}(uint8_t max_updates = 0);`).join('\n');
 const endpoints = queueTypes.map((type, index) =>
@@ -65,8 +66,8 @@ void process_power_flow_updates() { ++power_flow_calls; }
 bool power_flow_entity_changed(const char*) { return false; }
 
 struct Call { std::size_t queue; uint8_t budget; };
-static std::array<unsigned, 10> pending{};
-static std::array<Call, 10> calls{};
+static std::array<unsigned, 11> pending{};
+static std::array<Call, 11> calls{};
 static std::size_t call_count = 0;
 
 static void consume(std::size_t queue, uint8_t budget) {
@@ -79,7 +80,7 @@ static void consume(std::size_t queue, uint8_t budget) {
 
 ${endpoints}
 
-static void expect_calls(const std::array<uint8_t, 10>& budgets) {
+static void expect_calls(const std::array<uint8_t, 11>& budgets) {
   assert(call_count == calls.size());
   for (std::size_t i = 0; i < calls.size(); ++i) {
     assert(calls[i].queue == i);
@@ -89,8 +90,8 @@ static void expect_calls(const std::array<uint8_t, 10>& budgets) {
 }
 
 int main() {
-  constexpr std::array<uint8_t, 10> active = {6, 6, 4, 4, 4, 4, 4, 2, 4, 2};
-  constexpr std::array<uint8_t, 10> drain_all = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  constexpr std::array<uint8_t, 11> active = {6, 6, 4, 4, 4, 4, 4, 2, 2, 4, 2};
+  constexpr std::array<uint8_t, 11> drain_all = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   pending.fill(20);
 
   process_tile_update_queues<TileUpdateBudget::Active>();
@@ -138,6 +139,8 @@ try {
   fs.writeFileSync(path.join(tempRoot, 'src/types/device/device_updates.h'), '#pragma once\n#include <stdint.h>\nvoid process_device_updates(uint8_t);\n');
   fs.mkdirSync(path.join(tempRoot, 'src/types/calendar'), {recursive:true});
   fs.writeFileSync(path.join(tempRoot, 'src/types/calendar/calendar_updates.h'), '#pragma once\n#include <stdint.h>\nvoid process_calendar_updates(uint8_t);\n');
+  fs.mkdirSync(path.join(tempRoot, 'src/types/todo'), {recursive:true});
+  fs.writeFileSync(path.join(tempRoot, 'src/types/todo/todo_updates.h'), '#pragma once\n#include <stdint.h>\nvoid process_todo_updates(uint8_t);\n');
   const stubDir = path.join(tempRoot, 'src', 'tiles', 'runtime');
   fs.mkdirSync(stubDir, {recursive: true});
   fs.writeFileSync(path.join(stubDir, 'tile_renderer.h'),

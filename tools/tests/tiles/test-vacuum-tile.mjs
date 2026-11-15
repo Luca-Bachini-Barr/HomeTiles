@@ -15,7 +15,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.
 const read = file => fs.readFileSync(path.join(root, file), 'utf8').replace(/\r\n?/g, '\n');
 
 // Persisted ID and policies.
-assert.match(read('src/types/tile_type.h'), /TILE_POWER_FLOW = 28,\n  TILE_VACUUM = 29\n/);
+assert.match(read('src/types/tile_type.h'), /TILE_POWER_FLOW = 28,\n  TILE_VACUUM = 29,\n/);
 assert.match(read('src/types/tile_type_policy.h'), /\|\| type == TILE_VACUUM;/);
 assert.match(read('src/tiles/config/tile_geometry.h'), /type == TILE_FAN \|\| type == TILE_VACUUM;/);
 assert.match(read('src/ui/navigation/view_navigation.cpp'), /case TILE_VACUUM: return true;/);
@@ -41,7 +41,7 @@ assert.ok(tiles.includes('appendList("vacuums", parseSensorList(ha.vacuums_text)
 assert.ok(tiles.includes('&ha.fans_text, &ha.vacuums_text}'), 'the previews read the vacuum detail');
 const picker = read('src/web/admin/tiles/entity-picker.js');
 assert.ok(picker.includes("['calendar'], ['vacuum']"), 'the picker names the vacuum domain');
-assert.ok(picker.includes("'calendars', 'vacuums']"), 'the picker searches the vacuums list');
+assert.ok(picker.includes("'calendars', 'vacuums'"), 'the picker searches the vacuums list');
 
 // The detail state goes to its own cache; tiles and popup follow it.
 const control = read('src/types/device/device_control.cpp');
@@ -261,7 +261,7 @@ const labels = labelEnum.split('\n').map(line => line.replace(/\/\/.*$/, '').tri
 assert.equal(labels.at(-1), 'Count');
 assert.match(header, new RegExp(`const char\\* vacuum_labels\\[${labels.length - 1}\\];`));
 assert.match(header, /const char\* vacuum_states\[8\];/);
-assert.match(header, /const char\* entity_kind_labels\[24\];/);
+assert.match(header, /const char\* entity_kind_labels\[25\];/);
 const i18n = read('src/core/i18n/i18n.cpp');
 const profiles = [...i18n.matchAll(/static const LocaleProfile kLocale(\w+) = \{([\s\S]*?\})\};\n/g)];
 assert.equal(profiles.length, 8, 'eight languages');

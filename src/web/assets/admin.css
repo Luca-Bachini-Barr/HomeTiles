@@ -1877,7 +1877,7 @@
     /* These renderers share the Sensor header on the device. Scale its
        coordinates once and compensate the preview's 3 px selection border. */
     .tile:is(.sensor, .binary_sensor, .number, .select, .datetime,
-             .cover, .device, .energy, .weather, .media, .climate, .switch-bar, .calendar) > .tile-title {
+             .cover, .device, .energy, .weather, .media, .climate, .switch-bar, .calendar, .todo) > .tile-title {
       position:absolute;
       top:calc(var(--tile-header-title-top, 14px) - 3px);
       right:calc(var(--tile-header-title-right, 8px) - 3px);
@@ -1886,7 +1886,7 @@
       text-align:right;
     }
     .tile:is(.sensor, .binary_sensor, .number, .select, .datetime,
-             .cover, .device, .energy, .weather, .media, .climate, .switch-bar, .calendar) > .tile-icon {
+             .cover, .device, .energy, .weather, .media, .climate, .switch-bar, .calendar, .todo) > .tile-icon {
       position:absolute;
       top:calc(var(--tile-header-icon-top, 8px) - 3px);
       left:calc(var(--tile-header-icon-left, 6px) - 3px);
@@ -3330,7 +3330,7 @@
    Centered icons above a title (Folder, Scene, Camera, Switch) use the same
    size (tile_icon_disc::header_diameter). */
 .tile:is(.sensor, .binary_sensor, .number, .select, .datetime,
-         .cover, .device, .energy, .weather, .media, .climate, .switch-bar, .calendar):not(.empty):not(.sensor-compact) > .tile-icon::after,
+         .cover, .device, .energy, .weather, .media, .climate, .switch-bar, .calendar, .todo):not(.empty):not(.sensor-compact) > .tile-icon::after,
 .tile:is(.scene, .navigate, .camera, .switch:not(.switch-bar)):not(.empty):not(.sensor-compact) > .tile-icon::after {
   width:var(--icon-disc-corner, var(--icon-disc-round, 30px));
   height:var(--icon-disc-corner, var(--icon-disc-round, 30px));
@@ -3339,7 +3339,7 @@
    tile_icon_disc::add_round places it, not centered on the icon box, whose
    position and size are rounded to pixels. */
 .tile:is(.sensor, .binary_sensor, .number, .select, .datetime,
-         .cover, .device, .energy, .weather, .media, .climate, .switch-bar, .calendar):not(.empty):not(.sensor-compact) > .tile-icon::after {
+         .cover, .device, .energy, .weather, .media, .climate, .switch-bar, .calendar, .todo):not(.empty):not(.sensor-compact) > .tile-icon::after {
   left:calc(var(--compact-inset, 2px) + var(--corner-disc-shrink, 0px) - var(--tile-header-icon-left, 6px));
   top:calc(var(--compact-inset, 2px) + var(--corner-disc-shrink, 0px) - var(--tile-header-icon-top, 8px));
   width:calc(var(--icon-disc-corner, var(--icon-disc-round, 30px)) - 2 * var(--corner-disc-shrink, 0px));
@@ -4083,3 +4083,28 @@ select.setup-from:hover { background-color:#333333; }
 .calendar-preview-day.outside > b { opacity:.4; }
 .calendar-preview-dots { display:flex; gap:2px; height:4px; }
 .calendar-preview-dots > i { width:4px; height:4px; border-radius:50%; }
+
+/* To-do (types/todo/todo_tile.cpp): the Sensor header above the open count,
+   the first item or the list of open items, each with an empty circle. */
+.tile.todo:not(.sensor-compact) { display:block; }
+.tile.todo > .todo-preview-body {
+  position:absolute;
+  left:calc(var(--tile-pad-h, 10px) - 3px); right:calc(var(--tile-pad-h, 10px) - 3px);
+  top:calc(var(--compact-inset, 3px) * 2 + var(--icon-disc-corner, 30px) - 3px);
+  bottom:calc(var(--tile-pad-v, 12px) - 3px);
+  overflow:hidden; color:var(--pv-text, #fff); font-size:var(--fs20, 10px); line-height:1.25;
+}
+.todo-preview-body.count, .todo-preview-body.next { display:flex; flex-direction:column; justify-content:center; }
+.todo-preview-body.count { text-align:center; }
+.todo-preview-body.count > .todo-preview-what { font-size:var(--fs28, 14px); }
+.todo-preview-body.next > .todo-preview-what { font-size:var(--fs28, 14px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.todo-preview-body > .todo-preview-when,
+.tile.todo .todo-preview-more,
+.tile.todo .todo-preview-message { color:var(--pv-text-secondary, #D8DEE9); }
+.todo-preview-body > .todo-preview-when { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.todo-preview-body.list { display:flex; flex-direction:column; }
+.tile.todo .todo-preview-row { display:flex; align-items:center; gap:.6em; min-height:1.55em; white-space:nowrap; }
+.tile.todo .todo-preview-mark { flex:0 0 auto; width:.6em; height:.6em; border:max(1px, .1em) solid var(--pv-text-secondary, #D8DEE9); border-radius:50%; }
+.tile.todo .todo-preview-more { padding-left:1.2em; }
+.tile.todo .todo-preview-title { overflow:hidden; text-overflow:ellipsis; }
+.tile.todo .todo-preview-message { margin:auto; text-align:center; }

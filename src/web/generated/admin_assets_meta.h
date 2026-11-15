@@ -8,31 +8,31 @@ namespace web_admin_assets_generated {
 // The readable Admin JS and CSS are formatted only during host generation.
 
 inline constexpr char kAdminCssPath[] =
-    "/assets/admin.ba365f2d4cb9.css";
+    "/assets/admin.d0f9a925db39.css";
 inline constexpr char kAdminCssEtag[] =
-    "\"2f2729dcef504057dbe5bb1c104636fade7aeea4d5be519ddbcf23c2bac63d90\"";
+    "\"fec05649555e37a7ef9a76897dc4daea1237de42e980cc4e108b38314d915412\"";
 inline constexpr char kAdminCssContentType[] =
     "text/css; charset=utf-8";
-inline constexpr size_t kAdminCssSourceSize = 144633;
-inline constexpr size_t kAdminCssGzipSize = 24651;
+inline constexpr size_t kAdminCssSourceSize = 146239;
+inline constexpr size_t kAdminCssGzipSize = 24761;
 
 inline constexpr char kAdminJsPath[] =
-    "/assets/admin.c69f4d217b9f.js";
+    "/assets/admin.ec601953d355.js";
 inline constexpr char kAdminJsEtag[] =
-    "\"58894abf02cbd9232da1fe777f16ac4146d0179227e76cdb03ad685904cb3cb5\"";
+    "\"126d88314c04538c72f4799931e0ce029882b28d08ed71b18be655b99c217734\"";
 inline constexpr char kAdminJsContentType[] =
     "application/javascript; charset=utf-8";
-inline constexpr size_t kAdminJsSourceSize = 776938;
-inline constexpr size_t kAdminJsGzipSize = 184377;
+inline constexpr size_t kAdminJsSourceSize = 783171;
+inline constexpr size_t kAdminJsGzipSize = 184463;
 
 inline constexpr char kAdminAuthJsPath[] =
     "/assets/auth.30f8c27a905b.js";
 inline constexpr char kAdminAuthJsEtag[] =
-    "\"bb38357b164dc09159d74b9b248589d15420f54b2936d46422d650b5a22dc092\"";
+    "\"83418d76e8836aa26fb5f56bcb7aa19736b479ab4bef505c6c59b5320b5509c6\"";
 inline constexpr char kAdminAuthJsContentType[] =
     "application/javascript; charset=utf-8";
 inline constexpr size_t kAdminAuthJsSourceSize = 10991;
-inline constexpr size_t kAdminAuthJsGzipSize = 4104;
+inline constexpr size_t kAdminAuthJsGzipSize = 4032;
 
 }  // namespace web_admin_assets_generated
 

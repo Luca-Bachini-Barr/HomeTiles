@@ -15,6 +15,7 @@
 #include "src/ui/popups/device/device_popup.h"
 #include "src/ui/popups/vacuum/vacuum_popup.h"
 #include "src/ui/popups/calendar/calendar_popup.h"
+#include "src/ui/popups/todo/todo_popup.h"
 #include "src/ui/popups/pin/pin_popup.h"
 #include "src/ui/popups/camera/camera_popup.h"
 #include "src/core/display/display_manager.h"
@@ -182,6 +183,7 @@ void UIManager::preloadPopups() {
   preload_device_popup();
   preload_vacuum_popup();
   preload_calendar_popup();
+  preload_todo_popup();
   preload_pin_popup();
   preload_camera_popup();
 }

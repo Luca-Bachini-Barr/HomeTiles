@@ -1,4 +1,5 @@
 #include "src/types/calendar/calendar_store.h"
+#include "src/types/todo/todo_store.h"
 #include "src/web/server/web_admin.h"
 #include "src/web/server/auth/web_admin_auth.h"
 #include "src/core/text/title_text.h"
@@ -1259,6 +1260,19 @@ void WebAdminServer::handleGetSensorValues() {
   }
   json += "}";
 
+  // To-do previews read the retained items (types/todo).
+  json += ",\"todo_values\":{";
+  bool first_todo_value = true;
+  for (const auto& id : parseSensorList(ha.todos_text)) {
+    const String payload = todo_store::payload(id);
+    if (!payload.length()) continue;
+    if (!first_todo_value) json += ',';
+    first_todo_value = false;
+    json += '\"'; appendJsonEscaped(json, id); json += "\":\"";
+    appendJsonEscaped(json, payload); json += '\"';
+  }
+  json += "}";
+
   // Climate states include HVAC mode, action and unit alongside temperature.
   // Keep the complete JSON payload from the central entity cache because the
   // Web editor also uses it to derive the dynamic icon.
@@ -1482,6 +1496,7 @@ void WebAdminServer::handleGetEntityOptions() {
   appendList("fans", parseSensorList(ha.fans_text));
   appendList("vacuums", parseSensorList(ha.vacuums_text));
   appendList("calendars", parseSensorList(ha.calendars_text));
+  appendList("todos", parseSensorList(ha.todos_text));
   appendList("cameras", parseSensorList(ha.cameras_text));
   // The screensaver picture: released images, then cameras.
   std::vector<String> picture_ids = parseSensorList(ha.images_text);

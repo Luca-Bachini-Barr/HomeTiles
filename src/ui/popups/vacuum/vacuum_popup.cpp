@@ -20,6 +20,7 @@
 #include "src/types/vacuum/vacuum_visual.h"
 #include "src/ui/navigation/view_navigation.h"
 #include "src/ui/popups/calendar/calendar_popup.h"
+#include "src/ui/popups/todo/todo_popup.h"
 #include "src/ui/popups/camera/camera_popup.h"
 #include "src/ui/popups/climate/climate_popup.h"
 #include "src/ui/popups/cover/cover_popup.h"
@@ -878,6 +879,7 @@ void show_vacuum_popup(const VacuumPopupTarget& target) {
   hide_media_popup();
   hide_camera_popup();
   hide_calendar_popup();
+  hide_todo_popup();
   hide_device_popup();
   if (pop.target.entity != target.entity) {
     pop.rooms = 0;

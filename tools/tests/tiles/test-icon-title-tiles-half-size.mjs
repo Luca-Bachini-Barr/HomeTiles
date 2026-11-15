@@ -11,7 +11,7 @@ const read = file => readRepoFile(file).replace(/\r\n?/g, '\n');
 // Firmware geometry.
 const geometry = read('src/tiles/config/tile_geometry.h');
 assert.match(geometry, /inline bool icon_title\(int type\) \{\s*return type == TILE_SCENE \|\| type == TILE_FOLDER \|\| type == TILE_BACK \|\| type == TILE_CAMERA \|\| type == TILE_SETTINGS;/);
-assert.match(geometry, /inline bool half_size\(int type\) \{\s*return sensor\(type\) \|\| type == TILE_CLOCK \|\| type == TILE_TEXT \|\| icon_title\(type\) \|\| type == TILE_SWITCH \|\|\s*type == TILE_COVER \|\| type == TILE_CLIMATE \|\| editable\(type\) \|\| device_control\(type\) \|\| calendar\(type\);\s*\}/);
+assert.match(geometry, /inline bool half_size\(int type\) \{\s*return sensor\(type\) \|\| type == TILE_CLOCK \|\| type == TILE_TEXT \|\| icon_title\(type\) \|\| type == TILE_SWITCH \|\|\s*type == TILE_COVER \|\| type == TILE_CLIMATE \|\| editable\(type\) \|\| device_control\(type\) \|\| calendar\(type\) \|\|\s*todo\(type\);\s*\}/);
 assert.doesNotMatch(geometry, /type == TILE_BACK\) &&\s*\(fractional/, 'Back may use half steps');
 assert.match(geometry, /inline bool compact_icon_title\(int type, float w, float h\) \{\s*return icon_title\(type\) && w >= 1 && h == 0\.5f;/);
 assert.doesNotMatch(geometry, /compact_back/);
@@ -51,7 +51,7 @@ assert.match(camera, /if \(!compact\) \{[\s\S]*?tile_icon_disc::add_round\(card,
 // Fixed icon color with glow: persisted like the Sensor family's record,
 // applied once when the tile is built, previewed with the same color.
 const policy = read('src/types/tile_type_policy.h');
-assert.match(policy, /static constexpr bool tileTypeHasFixedIconColorOnly\(int type\) \{\s*return type == TILE_SCENE \|\| type == TILE_FOLDER \|\| type == TILE_BACK \|\| type == TILE_CAMERA \|\|\s*type == TILE_CLOCK \|\| type == TILE_TEXT;/);
+assert.match(policy, /static constexpr bool tileTypeHasFixedIconColorOnly\(int type\) \{\s*return type == TILE_SCENE \|\| type == TILE_FOLDER \|\| type == TILE_BACK \|\| type == TILE_CAMERA \|\|\s*type == TILE_CLOCK \|\| type == TILE_TEXT \|\| type == TILE_TODO;/);
 assert.match(policy, /return tileTypeRulesUseOwnEntity\(type\) \|\| tileTypeHasFixedIconColorOnly\(type\);/);
 assert.ok(!/tileTypeIconColorsByValue[^}]*TILE_(SCENE|FOLDER|BACK|CAMERA)/.test(policy) &&
   !/tileTypeIconColorsByState[^}]*TILE_(SCENE|FOLDER|BACK|CAMERA)/.test(policy), 'Fixed color only: no bar and no state list');
