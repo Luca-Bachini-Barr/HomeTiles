@@ -1034,6 +1034,8 @@ struct LocaleProfile {
   // this year by the month, this month and this week by the day.
   const char* energy_period_labels[3];
 
+  // The Assist screen (ui/assist), AssistLabel order.
+  const char* assist_labels[5];
 };
 
 // Index into LocaleProfile::energy_period_labels.
@@ -1153,6 +1155,10 @@ enum class DeviceLabel : uint8_t {
 };
 static_assert(static_cast<int>(DeviceLabel::Count) == 42, "LocaleProfile::device_labels size");
 
+// Index into LocaleProfile::assist_labels (the Assist screen, ui/assist).
+enum class AssistLabel : uint8_t { Title, Listening, Thinking, NoSpeech, Failed, Count };
+static_assert(static_cast<int>(AssistLabel::Count) == 5, "LocaleProfile::assist_labels size");
+
 // Locale-independent timezone catalog with codes and group assignments.
 // LocaleProfile::timezone_labels supplies display names in the same order.
 constexpr size_t kTimezoneOptionCount = 27;
@@ -1191,6 +1197,7 @@ const char* weather_tomorrow_label(const char* language_code);
 const char* weather_sensor_label(const char* language_code, uint8_t index);
 const char* power_flow_label(const char* language_code, PowerFlowLabel label);
 const char* vacuum_label(const char* language_code, VacuumLabel label);
+const char* assist_label(const char* language_code, AssistLabel label);
 // A Home Assistant vacuum state ("cleaning", ...) as shown; an unknown one as
 // "unknown".
 const char* vacuum_state_label(const char* language_code, const char* state);

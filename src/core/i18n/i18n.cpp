@@ -2263,7 +2263,8 @@ static const LocaleProfile kLocaleDe = {
     "{d}. {M} {Y}",
     1,  // QWERTZ
     "äöüß",
-    {"Jahr", "Monat", "Woche"}};
+    {"Jahr", "Monat", "Woche"},
+    {"Assist", "Ich höre zu…", "Ich denke nach…", "Ich habe nichts gehört", "Etwas ist schiefgelaufen"}};
 
 static const LocaleProfile kLocaleEn = {
     "en",
@@ -2396,7 +2397,8 @@ static const LocaleProfile kLocaleEn = {
     "{d} {M} {Y}",
     0,  // QWERTY
     "",
-    {"Year", "Month", "Week"}};
+    {"Year", "Month", "Week"},
+    {"Assist", "Listening…", "Thinking…", "I didn't hear anything", "Something went wrong"}};
 
 static const LocaleProfile kLocaleFr = {
     "fr",
@@ -2534,7 +2536,8 @@ static const LocaleProfile kLocaleFr = {
     "{d} {M} {Y}",
     2,  // AZERTY
     "àâæéèêëîïôçœùûüÿ«»’€",
-    {"Année", "Mois", "Semaine"}};
+    {"Année", "Mois", "Semaine"},
+    {"Assist", "J’écoute…", "Je réfléchis…", "Je n’ai rien entendu", "Une erreur s’est produite"}};
 
 // Codes and groups match LocaleProfile::timezone_labels and
 // timezone_group_labels (see i18n.h).
@@ -6047,7 +6050,8 @@ static const LocaleProfile kLocalePl = {
     "{d} {M} {Y}",
     0,  // QWERTY
     "ąćęłńóśźż",
-    {"Rok", "Miesiąc", "Tydzień"}};
+    {"Rok", "Miesiąc", "Tydzień"},
+    {"Assist", "Słucham…", "Myślę…", "Nic nie usłyszałem", "Coś poszło nie tak"}};
 
 static const LocaleProfile kLocaleCs = {
     "cs",
@@ -6114,7 +6118,8 @@ static const LocaleProfile kLocaleCs = {
     "{d}. {M} {Y}",
     1,  // QWERTZ
     "áčďéěíňóřšťúůýž",
-    {"Rok", "Měsíc", "Týden"}};
+    {"Rok", "Měsíc", "Týden"},
+    {"Assist", "Poslouchám…", "Přemýšlím…", "Nic jsem neslyšel", "Něco se pokazilo"}};
 
 static const LocaleProfile kLocaleEs = {
     "es",
@@ -6247,7 +6252,8 @@ static const LocaleProfile kLocaleEs = {
     "{d} de {M} de {Y}",
     0,  // QWERTY
     "ñáéíóúü¿¡",
-    {"Año", "Mes", "Semana"}};
+    {"Año", "Mes", "Semana"},
+    {"Assist", "Escuchando…", "Pensando…", "No he oído nada", "Algo salió mal"}};
 
 const TimezoneOptionInfo& timezone_option(size_t index) {
   if (index >= kTimezoneOptionCount) index = 0;
@@ -6390,7 +6396,8 @@ static const LocaleProfile kLocaleSk = {
     "{d}. {M} {Y}",
     1,  // QWERTZ
     "áäčďéíĺľňóôŕšťúýž",
-    {"Rok", "Mesiac", "Týždeň"}};
+    {"Rok", "Mesiac", "Týždeň"},
+    {"Assist", "Počúvam…", "Premýšľam…", "Nič som nepočul", "Niečo sa pokazilo"}};
 
 static const LocaleProfile kLocaleRu = {
     "ru",
@@ -6523,7 +6530,8 @@ static const LocaleProfile kLocaleRu = {
     "{d} {M} {Y}",
     3,  // JCUKEN (Russian)
     "ёъ",
-    {"Год", "Месяц", "Неделя"}};
+    {"Год", "Месяц", "Неделя"},
+    {"Assist", "Слушаю…", "Думаю…", "Ничего не слышно", "Что-то пошло не так"}};
 
 static const LanguageEntry kLanguages[] = {
     {&kStringsEn, &kLocaleEn},
@@ -6723,6 +6731,12 @@ const char* weather_tomorrow_label(const char* language_code) {
 const char* weather_sensor_label(const char* language_code, uint8_t index) {
   if (index >= 3) index = 2;
   return locale(language_code).weather_sensor_labels[index];
+}
+
+const char* assist_label(const char* language_code, AssistLabel label) {
+  const auto index = static_cast<size_t>(label);
+  if (index >= static_cast<size_t>(AssistLabel::Count)) return "";
+  return locale(language_code).assist_labels[index];
 }
 
 const char* vacuum_label(const char* language_code, VacuumLabel label) {

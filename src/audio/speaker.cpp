@@ -8,6 +8,7 @@
 #include "src/audio/speaker_contract.h"
 #include "src/network/mqtt/mqtt_topics.h"
 #include "src/network/network_manager.h"
+#include "src/ui/assist/assist_screen.h"
 
 #if defined(HOMETILES_SPEAKER)
 #include <HTTPClient.h>
@@ -88,6 +89,8 @@ std::atomic<bool> g_mic_enabled{false};
 // ES7210 mic gain step (stored), applied whenever the input opens.
 std::atomic<uint8_t> g_mic_gain{kDefaultMicGainStep};
 std::atomic<uint8_t> g_assist_state{static_cast<uint8_t>(assist::PublicState::Idle)};
+// Wake word detections sent to the Bridge (wakeDetections, the Assist screen).
+std::atomic<uint32_t> g_wake_detections{0};
 std::atomic<uint8_t> g_assist_error{static_cast<uint8_t>(assist::ErrorCode::None)};
 std::atomic<uint32_t> g_assist_state_generation{0};
 uint32_t g_assist_published_generation = 0;
@@ -1628,6 +1631,7 @@ bool handleWakeDetection(const char* word, const String& topic, uint32_t mask, u
   Serial.printf("%s Wake word %s sent (seq %lu), waiting for Assist\n", kLogPrefix, word,
                 static_cast<unsigned long>(g_wake_sequence));
   ++g_wake_sequence;
+  g_wake_detections.fetch_add(1);
   setAssistStatusId(nullptr);
   setAssistPublic(assist::PublicState::Wake, assist::ErrorCode::None);
   g_ring.clear();
@@ -2069,6 +2073,9 @@ void handleCommandPayload(const uint8_t* payload, size_t length) {
 }
 
 void handleAssistCommandPayload(const uint8_t* payload, size_t length, bool sealed) {
+  // The Assist screen's view command (assist_view.h) has its own, larger
+  // size limit and needs no audio worker.
+  if (assist_screen::handleCommandPayload(payload, length, sealed)) return;
 #if defined(HOMETILES_SPEAKER)
   if (!g_worker || g_shutdown.load() || !g_request_mutex) return;
   assist::Command command;
@@ -2251,6 +2258,8 @@ uint32_t cameraSyncDelayMs() {
 }
 
 bool micCapability() { return kSupported && g_mic_ready.load(); }
+
+uint32_t wakeDetections() { return g_wake_detections.load(); }
 
 void shutdown(const char* reason) {
 #if defined(HOMETILES_SPEAKER)

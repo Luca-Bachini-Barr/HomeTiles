@@ -1,4 +1,5 @@
 #include "src/ui/navigation/view_navigation.h"
+#include "src/ui/assist/assist_screen.h"
 
 #include <WiFi.h>
 #include <Wire.h>
@@ -1421,6 +1422,7 @@ void loop() {
       loop_stall::enter(loop_stall::Step::SleepMqtt);
       mqttServicePostConnect();
     viewNavigationService();
+    assist_screen::service();
       mqtt_process_inbound_queue();
       local_camera::service();
       speaker::service();
@@ -1604,6 +1606,7 @@ void loop() {
     mqttServicePostConnect();
     loop_stall::enter(loop_stall::Step::Services);
     viewNavigationService();
+    assist_screen::service();
     local_camera::service();
     speaker::service();
     command_channel::service();
