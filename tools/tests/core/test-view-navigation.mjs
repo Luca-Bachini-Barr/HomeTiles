@@ -332,7 +332,8 @@ int main(){
   // camera, not its folder.
   camera_visible=true;assert(displayedView().current==String("tile:")+String(id)&&
     String(displayedView().mode)=="popup"&&!displayedView().full);
-  camera_full=true;assert(displayedView().full);
+  camera_full=true;assert(displayedView().current==String("tile:")+String(id)&&
+    String(displayedView().mode)=="popup"&&displayedView().full);
   camera_full=false;camera_visible=false;
   assert(displayedView().current!=String("tile:")+String(id));
   prepare(2,id,{0,1,2});pending.step=firstRequiredFolderStep(pending.path);
