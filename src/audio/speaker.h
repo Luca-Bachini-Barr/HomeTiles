@@ -96,6 +96,16 @@ uint32_t cameraSyncDelayMs();
 // "audio_input" flag in the Bridge capabilities: microphone ADC answered.
 bool micCapability();
 
+// Counts the wake word detections the Bridge was told about (the Assist
+// screen opens on each new one). Any task.
+uint32_t wakeDetections();
+
+// The loudest microphone input and speaker output (0..255, audio_level.h)
+// since the last call; 0 when nothing was captured or played. The Assist
+// screen draws its waves from them. Any task.
+uint8_t takeMicLevel();
+uint8_t takeOutputLevel();
+
 // OTA or restart: stops playback and capture, switches the amplifier off and
 // releases I2S. Waits a bounded time for the worker. Later commands are
 // ignored.

@@ -46,6 +46,7 @@
 #include <string.h>
 
 #include "src/core/hardware/board_hal.h"
+#include "src/ui/assist/assist_screen.h"
 #include "src/ui/shared/ui_theme.h"
 #include "src/ui/shared/theme_schedule.h"
 #include "src/ui/shared/touch_rules.h"
@@ -243,6 +244,7 @@ void UIManager::processThemeChange() {
   page_preview::close();
   settings_screen::close_overlays();
   popup_shell_delete_popups();
+  assist_screen::resetForTheme();
   preloadPopups();
   // The screen behind everything.
   const lv_color_t screen = lv_color_hex(ui_theme::screen());

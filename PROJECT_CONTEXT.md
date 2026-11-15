@@ -26,7 +26,7 @@ Last reviewed: 2026-10-29
 - Media popup: layouts `sensor_display_mode` 0 cover left, 1 centre; controls only with their HA feature bit; menu box: speakers, source, library; tile/head icon state form (`state_icon.h`).
 - #116 (JC4880 camera popup ends after 18-60 min): Bridge waits 45 s per chunk ACK; reporter pending.
 - Issue #119 (Guition V1): own Helix (b501, `src/audio/helix_mp3`): the core's overran on MPEG-2.5; TLS in PSRAM. Speaker audio from the Bridge (`docs-dev/audio-stream.md`): FFmpeg -> mono PCM over the camera tcp-ack listener (`HTAUD/1`); panels announce `"stream":"tcp-ack-v1"`. HW ok. Camera sound: lip-synced live track (b507 HW ok, b508 even gaps HW pending).
-- Voice: mic/wake word off on a new panel (b500), listening its own setting, the word stays; Bridge v0.9.4b6 Listening switch. HW/HA test pending. Mic button + audio settings: mockup first; #91 declined.
+- Voice: mic/wake word off on new panels (b500), listen own setting; Bridge v0.9.4b6 switch, HW/HA pending. Mic button/audio settings: mockup first, #91 no. Assist screen `src/ui/assist`: 7B HW ok.
 
 ## Do not retry (rejected with evidence)
 

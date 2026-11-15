@@ -100,6 +100,9 @@ struct CameraPopupContext {
   bool open_full = false;
   // Opened in full screen by its tile: a tap there closes the popup.
   bool close_on_leave = false;
+  // The Assist screen covers the full screen (camera_popup_pause_full_screen):
+  // it comes back when the Assist screen closes.
+  bool paused_for_overlay = false;
   // ...and the popup card was not shown on the way (user 2026-10-11: it
   // showed briefly first); it shows only where the full screen cannot start
   // (reveal_skipped_popup).
@@ -380,6 +383,7 @@ static void close_camera_popup() {
   g_camera_popup->close_on_leave = false;
   const bool shell_shown = !g_camera_popup->shell_skipped;
   g_camera_popup->shell_skipped = false;
+  g_camera_popup->paused_for_overlay = false;
   camera_transport::popup_closed();
   const String entity_id = g_camera_popup->entity_id;
   g_camera_popup->visible = false;
@@ -716,6 +720,29 @@ void camera_popup_open_next_in_full_screen(bool full_screen) {
 
 bool camera_popup_is_full_screen() {
   return g_camera_popup && g_camera_popup->visible && g_camera_popup->full;
+}
+
+bool camera_popup_pause_full_screen() {
+#if defined(DEVICE_ESP32_S3_RGB_480)
+  // The S3's full screen is drawn by LVGL; the system layer covers it.
+  return false;
+#else
+  if (!camera_popup_is_full_screen()) return false;
+  // The stream ends with the full screen; the popup stays open underneath.
+  leave_full_screen(false);
+  g_camera_popup->paused_for_overlay = true;
+  Serial.println("[Camera] Full screen paused for an overlay");
+  return true;
+#endif
+}
+
+void camera_popup_resume_full_screen() {
+  if (!g_camera_popup || !g_camera_popup->paused_for_overlay) return;
+  g_camera_popup->paused_for_overlay = false;
+  if (!g_camera_popup->visible) return;
+  // process_camera_popup() enters it on the loop, like a tap would.
+  g_camera_popup->full_request = kFullEnter;
+  Serial.println("[Camera] Full screen resumes after the overlay");
 }
 
 bool camera_popup_is_busy() {
