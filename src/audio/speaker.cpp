@@ -5,6 +5,7 @@
 #include <atomic>
 
 #include "src/audio/assist_contract.h"
+#include "src/audio/audio_level.h"
 #include "src/audio/speaker_contract.h"
 #include "src/network/mqtt/mqtt_topics.h"
 #include "src/network/network_manager.h"
@@ -91,6 +92,10 @@ std::atomic<uint8_t> g_mic_gain{kDefaultMicGainStep};
 std::atomic<uint8_t> g_assist_state{static_cast<uint8_t>(assist::PublicState::Idle)};
 // Wake word detections sent to the Bridge (wakeDetections, the Assist screen).
 std::atomic<uint32_t> g_wake_detections{0};
+// Loudness of the microphone and of the speaker output since the Assist
+// screen last took it (audio_level.h): the screen's waves.
+std::atomic<uint8_t> g_mic_level{0};
+std::atomic<uint8_t> g_output_level{0};
 std::atomic<uint8_t> g_assist_error{static_cast<uint8_t>(assist::ErrorCode::None)};
 std::atomic<uint32_t> g_assist_state_generation{0};
 uint32_t g_assist_published_generation = 0;
@@ -459,6 +464,7 @@ ErrorCode openOutput(uint32_t rate, bool live = false) {
 }
 
 bool writeFrames(const int16_t* samples, size_t frames) {
+  audio_level::hold(g_output_level, audio_level::fromSamples(samples, frames));
   size_t written = 0;
   return i2s_channel_write(g_tx, samples, frames * sizeof(int16_t), &written,
                            kI2sWriteTimeoutMs) == ESP_OK;
@@ -1378,6 +1384,7 @@ int readMono() {
   } else {
     assist::stereoToMono(g_chunk, frames, g_mono);
   }
+  audio_level::hold(g_mic_level, audio_level::fromSamples(g_mono, frames));
   return static_cast<int>(frames);
 }
 
@@ -2260,6 +2267,10 @@ uint32_t cameraSyncDelayMs() {
 bool micCapability() { return kSupported && g_mic_ready.load(); }
 
 uint32_t wakeDetections() { return g_wake_detections.load(); }
+
+uint8_t takeMicLevel() { return audio_level::take(g_mic_level); }
+
+uint8_t takeOutputLevel() { return audio_level::take(g_output_level); }
 
 void shutdown(const char* reason) {
 #if defined(HOMETILES_SPEAKER)

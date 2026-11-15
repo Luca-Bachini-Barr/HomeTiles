@@ -118,6 +118,23 @@ constexpr uint32_t kDoneWithoutAnswerMs = 1500;
 // A run that starts this soon after the user closed the screen while it
 // waited for the Bridge belongs to the closed screen.
 constexpr uint32_t kDismissGraceMs = 5000;
+// Runs that ended (done and closed, timed out, closed by the user or
+// replaced by a newer run) are remembered, so their late updates never take
+// the screen again.
+constexpr size_t kEndedRuns = 4;
+
+// A cheap check for a view command before it is parsed (a paired panel
+// refuses unencrypted ones without spending the JSON parse on them). The
+// Bridge sends compact JSON.
+inline bool looksLikeViewCommand(const char* payload, size_t length) {
+  static const char kNeedle[] = "\"op\":\"view\"";
+  const size_t needle = sizeof(kNeedle) - 1;
+  if (!payload || length < needle) return false;
+  for (size_t i = 0; i + needle <= length; ++i) {
+    if (memcmp(payload + i, kNeedle, needle) == 0) return true;
+  }
+  return false;
+}
 
 inline bool reached(uint32_t now, uint32_t deadline) {
   return static_cast<int32_t>(now - deadline) >= 0;
@@ -136,8 +153,9 @@ class Model {
 
   // The panel detected its wake word: show at once, before the Bridge's run.
   void onWake(uint32_t now) {
-    // A closed run stays closed (dismissed_id_ is kept): its late updates
-    // must not take the new screen.
+    // A run shown until now ends; closed runs stay closed (their late
+    // updates must not take the new screen).
+    endRun();
     clearRun();
     dismissed_without_id_ = false;
     show(Screen::Listening, now + kWakeTimeoutMs);
@@ -146,18 +164,20 @@ class Model {
   // Returns true when the update changed the screen.
   bool apply(const Update& update, uint32_t now) {
     if (!update.id[0]) return false;
-    if (strcmp(update.id, dismissed_id_) == 0) return false;
+    if (ended(update.id)) return false;
     const bool same_run = id_[0] && strcmp(update.id, id_) == 0;
     if (!same_run) {
       // Closed while waiting for the Bridge: its run stays closed.
       if (dismissed_without_id_ && !reached(now, dismissed_at_ + kDismissGraceMs)) {
-        copyId(dismissed_id_, update.id);
+        remember(update.id);
         dismissed_without_id_ = false;
         return false;
       }
       // An end for a run that is not shown has nothing to end.
       if (update.stage == Stage::Done || (update.stage == Stage::Error && !visible())) return false;
-      // A new run (or the wake word's run) takes the screen.
+      // A new run (or the wake word's run) takes the screen; the one it
+      // replaces has ended.
+      endRun();
       if (id_[0] || screen_ != Screen::Listening) clearRun();
       copyId(id_, update.id);
     }
@@ -195,6 +215,7 @@ class Model {
   bool tick(uint32_t now) {
     if (!visible() || !reached(now, deadline_)) return false;
     screen_ = Screen::Hidden;
+    endRun();
     clearRun();
     ++revision_;
     return true;
@@ -204,7 +225,7 @@ class Model {
   void dismiss(uint32_t now) {
     if (!visible()) return;
     if (id_[0]) {
-      copyId(dismissed_id_, id_);
+      endRun();
       dismissed_without_id_ = false;
     } else {
       dismissed_without_id_ = true;
@@ -224,6 +245,22 @@ class Model {
     out[length] = '\0';
   }
 
+  bool ended(const char* id) const {
+    for (const auto& entry : ended_) {
+      if (entry[0] && strcmp(entry, id) == 0) return true;
+    }
+    return false;
+  }
+
+  void remember(const char* id) {
+    if (!id[0] || ended(id)) return;
+    copyId(ended_[ended_next_], id);
+    ended_next_ = static_cast<uint8_t>((ended_next_ + 1) % kEndedRuns);
+  }
+
+  // The run shown (if it has an id) is over.
+  void endRun() { remember(id_); }
+
   void clearRun() {
     id_[0] = '\0';
     heard_[0] = '\0';
@@ -239,7 +276,8 @@ class Model {
 
   Screen screen_ = Screen::Hidden;
   char id_[kMaxIdLength + 1] = {};
-  char dismissed_id_[kMaxIdLength + 1] = {};
+  char ended_[kEndedRuns][kMaxIdLength + 1] = {};
+  uint8_t ended_next_ = 0;
   bool dismissed_without_id_ = false;
   uint32_t dismissed_at_ = 0;
   char heard_[kMaxHeardBytes + 1] = {};

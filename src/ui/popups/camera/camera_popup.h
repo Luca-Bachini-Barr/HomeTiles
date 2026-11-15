@@ -24,6 +24,11 @@ bool camera_popup_is_visible();
 // caller clears it when no camera popup opened.
 void camera_popup_open_next_in_full_screen(bool full_screen);
 bool camera_popup_is_full_screen();
+// An overlay over everything (the Assist screen) pauses the full screen,
+// which draws past LVGL: its stream stops and the popup stays open. True when
+// it was paused; resume brings the full screen back (a no-op otherwise).
+bool camera_popup_pause_full_screen();
+void camera_popup_resume_full_screen();
 bool camera_popup_is_busy();
 void process_camera_popup();
 void camera_popup_handle_mqtt_status(const char* payload);
