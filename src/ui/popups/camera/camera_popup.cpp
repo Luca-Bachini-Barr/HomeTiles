@@ -379,11 +379,11 @@ static void close_camera_popup() {
   // A full screen asked for but not reached yet must not open with the next
   // popup.
   g_camera_popup->full_request = 0;
-  g_camera_popup->paused_for_overlay = false;
   g_camera_popup->open_full = false;
   g_camera_popup->close_on_leave = false;
   const bool shell_shown = !g_camera_popup->shell_skipped;
   g_camera_popup->shell_skipped = false;
+  g_camera_popup->paused_for_overlay = false;
   camera_transport::popup_closed();
   const String entity_id = g_camera_popup->entity_id;
   g_camera_popup->visible = false;
