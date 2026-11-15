@@ -985,6 +985,8 @@ struct LocaleProfile {
   // The first day of the week the Calendar tile uses unless the tile sets
   // one (tm_wday: 0 Sunday, 1 Monday).
   uint8_t first_weekday;
+  // The Assist screen (ui/assist), AssistLabel order.
+  const char* assist_labels[5];
   // The Vacuum tile and popup (types/vacuum), VacuumLabel order.
   const char* vacuum_labels[17];
   // Vacuum states: cleaning, docked, idle, paused, returning, error,
@@ -1034,8 +1036,6 @@ struct LocaleProfile {
   // this year by the month, this month and this week by the day.
   const char* energy_period_labels[3];
 
-  // The Assist screen (ui/assist), AssistLabel order.
-  const char* assist_labels[5];
 };
 
 // Index into LocaleProfile::energy_period_labels.

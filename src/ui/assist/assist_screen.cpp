@@ -214,11 +214,11 @@ void draw() {
       status = label(AssistLabel::Listening);
       break;
     case Screen::Processing:
-      icon = "comment-processing-outline";
+      icon = "dots-horizontal";
       status = label(AssistLabel::Thinking);
       break;
     case Screen::Responding:
-      icon = "account-voice";
+      icon = "volume-high";
       break;
     case Screen::Error:
       icon = "alert-circle-outline";

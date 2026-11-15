@@ -2243,6 +2243,7 @@ static const LocaleProfile kLocaleDe = {
     {"Januar", "Februar", "März", "April", "Mai", "Juni",
      "Juli", "August", "September", "Oktober", "November", "Dezember"},
     1,  // Monday
+    {"Assist", "Ich höre zu…", "Ich denke nach…", "Ich habe nichts gehört", "Etwas ist schiefgelaufen"},
     {"Staubsauger", "Staubsauger-Entität", "Reinigen", "Pausieren", "Dock", "Stopp", "Saugkraft", "Räume", "Finden", "Spot", "nur diese Stelle", "der Sauger piept", "%u saugen", "Popup", "Karte links", "Karte Mitte", "Karte"},
     {"Saugt", "Angedockt", "Bereit", "Pausiert", "Fährt zum Dock", "Fehler", "Nicht verfügbar", "Unbekannt"},
     {"Leistungsfluss", "Solarleistung", "Netzleistung", "Batterieleistung", "Batterieladung", "Hausverbrauch", "Titel und Icon anzeigen", "Karte anzeigen", "Vorzeichen umkehren"},
@@ -2263,8 +2264,7 @@ static const LocaleProfile kLocaleDe = {
     "{d}. {M} {Y}",
     1,  // QWERTZ
     "äöüß",
-    {"Jahr", "Monat", "Woche"},
-    {"Assist", "Ich höre zu…", "Ich denke nach…", "Ich habe nichts gehört", "Etwas ist schiefgelaufen"}};
+    {"Jahr", "Monat", "Woche"}};
 
 static const LocaleProfile kLocaleEn = {
     "en",
@@ -2377,6 +2377,7 @@ static const LocaleProfile kLocaleEn = {
     {"January", "February", "March", "April", "May", "June",
      "July", "August", "September", "October", "November", "December"},
     0,  // Sunday
+    {"Assist", "Listening…", "Thinking…", "I didn't hear anything", "Something went wrong"},
     {"Vacuum", "Vacuum entity", "Clean", "Pause", "Dock", "Stop", "Suction", "Rooms", "Locate", "Spot", "only this spot", "the vacuum beeps", "Clean %u", "Popup", "Map left", "Map centre", "Map"},
     {"Cleaning", "Docked", "Idle", "Paused", "Returning", "Error", "Unavailable", "Unknown"},
     {"Power flow", "Solar power", "Grid power", "Battery power", "Battery charge", "Home power", "Show title and icon", "Show card", "Invert sign"},
@@ -2397,8 +2398,7 @@ static const LocaleProfile kLocaleEn = {
     "{d} {M} {Y}",
     0,  // QWERTY
     "",
-    {"Year", "Month", "Week"},
-    {"Assist", "Listening…", "Thinking…", "I didn't hear anything", "Something went wrong"}};
+    {"Year", "Month", "Week"}};
 
 static const LocaleProfile kLocaleFr = {
     "fr",
@@ -2516,6 +2516,7 @@ static const LocaleProfile kLocaleFr = {
     {"Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
      "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"},
     1,  // Monday
+    {"Assist", "J’écoute…", "Je réfléchis…", "Je n’ai rien entendu", "Une erreur s’est produite"},
     {"Aspirateur", "Entité aspirateur", "Nettoyer", "Pause", "Base", "Arrêt", "Puissance", "Pièces", "Localiser", "Spot", "seulement cet endroit", "l'aspirateur émet un bip", "Nettoyer %u", "Popup", "Carte à gauche", "Carte au centre", "Carte"},
     {"Nettoie", "Sur la base", "Inactif", "En pause", "Retour à la base", "Erreur", "Indisponible", "Inconnu"},
     {"Flux de puissance", "Puissance solaire", "Puissance réseau", "Puissance batterie", "Charge batterie", "Consommation maison", "Afficher le titre et l’icône", "Afficher la carte", "Inverser le signe"},
@@ -2536,8 +2537,7 @@ static const LocaleProfile kLocaleFr = {
     "{d} {M} {Y}",
     2,  // AZERTY
     "àâæéèêëîïôçœùûüÿ«»’€",
-    {"Année", "Mois", "Semaine"},
-    {"Assist", "J’écoute…", "Je réfléchis…", "Je n’ai rien entendu", "Une erreur s’est produite"}};
+    {"Année", "Mois", "Semaine"}};
 
 // Codes and groups match LocaleProfile::timezone_labels and
 // timezone_group_labels (see i18n.h).
@@ -6030,6 +6030,7 @@ static const LocaleProfile kLocalePl = {
     {"Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec",
      "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"},
     1,  // Monday
+    {"Assist", "Słucham…", "Myślę…", "Nic nie usłyszałem", "Coś poszło nie tak"},
     {"Odkurzacz", "Encja odkurzacza", "Sprzątaj", "Pauza", "Stacja", "Stop", "Moc ssania", "Pokoje", "Znajdź", "Punkt", "tylko to miejsce", "odkurzacz piszczy", "Sprzątaj %u", "Okno", "Mapa z lewej", "Mapa na środku", "Mapa"},
     {"Sprząta", "W stacji", "Bezczynny", "Wstrzymany", "Wraca do stacji", "Błąd", "Niedostępny", "Nieznany"},
     {"Przepływ mocy", "Moc solarna", "Moc sieci", "Moc baterii", "Naładowanie baterii", "Zużycie domu", "Pokaż tytuł i ikonę", "Pokaż kartę", "Odwróć znak"},
@@ -6050,8 +6051,7 @@ static const LocaleProfile kLocalePl = {
     "{d} {M} {Y}",
     0,  // QWERTY
     "ąćęłńóśźż",
-    {"Rok", "Miesiąc", "Tydzień"},
-    {"Assist", "Słucham…", "Myślę…", "Nic nie usłyszałem", "Coś poszło nie tak"}};
+    {"Rok", "Miesiąc", "Tydzień"}};
 
 static const LocaleProfile kLocaleCs = {
     "cs",
@@ -6098,6 +6098,7 @@ static const LocaleProfile kLocaleCs = {
     {"Leden", "Únor", "Březen", "Duben", "Květen", "Červen",
      "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"},
     1,  // Monday
+    {"Assist", "Poslouchám…", "Přemýšlím…", "Nic jsem neslyšel", "Něco se pokazilo"},
     {"Vysavač", "Entita vysavače", "Uklidit", "Pozastavit", "Stanice", "Stop", "Sací výkon", "Místnosti", "Najít", "Bod", "jen toto místo", "vysavač pípá", "Uklidit %u", "Okno", "Mapa vlevo", "Mapa uprostřed", "Mapa"},
     {"Uklízí", "V základně", "Nečinný", "Pozastaveno", "Vrací se", "Chyba", "Nedostupné", "Neznámé"},
     {"Tok výkonu", "Solární výkon", "Výkon sítě", "Výkon baterie", "Nabití baterie", "Spotřeba domu", "Zobrazit název a ikonu", "Zobrazit kartu", "Obrátit znaménko"},
@@ -6118,8 +6119,7 @@ static const LocaleProfile kLocaleCs = {
     "{d}. {M} {Y}",
     1,  // QWERTZ
     "áčďéěíňóřšťúůýž",
-    {"Rok", "Měsíc", "Týden"},
-    {"Assist", "Poslouchám…", "Přemýšlím…", "Nic jsem neslyšel", "Něco se pokazilo"}};
+    {"Rok", "Měsíc", "Týden"}};
 
 static const LocaleProfile kLocaleEs = {
     "es",
@@ -6232,6 +6232,7 @@ static const LocaleProfile kLocaleEs = {
     {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"},
     1,  // Monday
+    {"Assist", "Escuchando…", "Pensando…", "No he oído nada", "Algo salió mal"},
     {"Aspiradora", "Entidad de aspiradora", "Limpiar", "Pausar", "Base", "Parar", "Potencia", "Habitaciones", "Localizar", "Punto", "solo este punto", "la aspiradora pita", "Limpiar %u", "Popup", "Mapa a la izquierda", "Mapa en el centro", "Mapa"},
     {"Limpiando", "En la base", "Inactiva", "En pausa", "Volviendo", "Error", "No disponible", "Desconocido"},
     {"Flujo de potencia", "Potencia solar", "Potencia de red", "Potencia de batería", "Carga de batería", "Consumo de la casa", "Mostrar título e icono", "Mostrar tarjeta", "Invertir signo"},
@@ -6252,8 +6253,7 @@ static const LocaleProfile kLocaleEs = {
     "{d} de {M} de {Y}",
     0,  // QWERTY
     "ñáéíóúü¿¡",
-    {"Año", "Mes", "Semana"},
-    {"Assist", "Escuchando…", "Pensando…", "No he oído nada", "Algo salió mal"}};
+    {"Año", "Mes", "Semana"}};
 
 const TimezoneOptionInfo& timezone_option(size_t index) {
   if (index >= kTimezoneOptionCount) index = 0;
@@ -6376,6 +6376,7 @@ static const LocaleProfile kLocaleSk = {
     {"Január", "Február", "Marec", "Apríl", "Máj", "Jún",
      "Júl", "August", "September", "Október", "November", "December"},
     1,  // Monday
+    {"Assist", "Počúvam…", "Premýšľam…", "Nič som nepočul", "Niečo sa pokazilo"},
     {"Vysávač", "Entita vysávača", "Upratať", "Pozastaviť", "Stanica", "Stop", "Sací výkon", "Miestnosti", "Nájsť", "Bod", "len toto miesto", "vysávač pípa", "Upratať %u", "Okno", "Mapa vľavo", "Mapa v strede", "Mapa"},
     {"Upratuje", "V stanici", "Nečinný", "Pozastavené", "Vracia sa", "Chyba", "Nedostupné", "Neznáme"},
     {"Tok výkonu", "Solárny výkon", "Výkon siete", "Výkon batérie", "Nabitie batérie", "Spotreba domu", "Zobraziť názov a ikonu", "Zobraziť kartu", "Obrátiť znamienko"},
@@ -6396,8 +6397,7 @@ static const LocaleProfile kLocaleSk = {
     "{d}. {M} {Y}",
     1,  // QWERTZ
     "áäčďéíĺľňóôŕšťúýž",
-    {"Rok", "Mesiac", "Týždeň"},
-    {"Assist", "Počúvam…", "Premýšľam…", "Nič som nepočul", "Niečo sa pokazilo"}};
+    {"Rok", "Mesiac", "Týždeň"}};
 
 static const LocaleProfile kLocaleRu = {
     "ru",
@@ -6510,6 +6510,7 @@ static const LocaleProfile kLocaleRu = {
     {"Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
      "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"},
     1,  // Monday
+    {"Assist", "Слушаю…", "Думаю…", "Ничего не слышно", "Что-то пошло не так"},
     {"Пылесос", "Сущность пылесоса", "Уборка", "Пауза", "База", "Стоп", "Мощность", "Комнаты", "Найти", "Точка", "только это место", "пылесос пищит", "Убрать %u", "Окно", "Карта слева", "Карта по центру", "Карта"},
     {"Убирает", "На базе", "Ожидает", "Пауза", "Возвращается", "Ошибка", "Недоступно", "Неизвестно"},
     {"Поток мощности", "Солнечная мощность", "Мощность сети", "Мощность батареи", "Заряд батареи", "Потребление дома", "Показывать название и иконку", "Показывать карточку", "Инвертировать знак"},
@@ -6530,8 +6531,7 @@ static const LocaleProfile kLocaleRu = {
     "{d} {M} {Y}",
     3,  // JCUKEN (Russian)
     "ёъ",
-    {"Год", "Месяц", "Неделя"},
-    {"Assist", "Слушаю…", "Думаю…", "Ничего не слышно", "Что-то пошло не так"}};
+    {"Год", "Месяц", "Неделя"}};
 
 static const LanguageEntry kLanguages[] = {
     {&kStringsEn, &kLocaleEn},
