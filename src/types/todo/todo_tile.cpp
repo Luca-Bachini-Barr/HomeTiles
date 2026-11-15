@@ -11,6 +11,7 @@
 #include "src/tiles/config/tile_geometry.h"
 #include "src/tiles/icons/mdi_icons.h"
 #include "src/tiles/runtime/compact_sensor_layout.h"
+#include "src/tiles/runtime/tile_icon_color_rules.h"
 #include "src/tiles/runtime/tile_icon_disc.h"
 #include "src/tiles/runtime/tile_renderer_fonts.h"
 #include "src/tiles/runtime/tile_renderer_shared.h"
@@ -41,6 +42,9 @@ struct View {
   String title;
   String icon_name;
   bool icon_visible = true;
+  // The tile's own icon color (tile_icon_colors): it stays, and "Fill"
+  // fills the tile with it (tile_icon_source::refresh_card).
+  bool own_icon_color = false;
   Layout layout = Layout::Next;
   lv_obj_t* card = nullptr;
   lv_obj_t* icon = nullptr;
@@ -95,7 +99,7 @@ const lv_font_t* font_for(int height) {
 // The icon is bright while something is open, dimmed when all is done or
 // nothing is known.
 void color_icon(View* view, const todo_items::List* list) {
-  if (!view->icon) return;
+  if (!view->icon || view->own_icon_color) return;
   const bool open = list && list->valid && list->available && list->open_count;
   const uint32_t color = open ? ui_theme::icon() : ui_theme::icon_inactive();
   if (view->layout == Layout::Compact) {
@@ -323,6 +327,9 @@ lv_obj_t* render_todo_tile(lv_obj_t* parent, int col, int row, const Tile& tile,
                       getMdiChar(view->icon_name.length() ? view->icon_name : String(kDefaultIcon)).c_str());
     lv_obj_align(view->icon, LV_ALIGN_TOP_LEFT, tile_layout::scale_480(-8), tile_layout::scale_480(-8));
   }
+  uint32_t own_rgb = 0;
+  view->own_icon_color = view->icon && tile.icon_colors.length() &&
+                         tile_icon_colors::resolve(tile.icon_colors.c_str(), "", nullptr, own_rgb);
 
   const int card_w = tile_geometry::extent(tile.col, std::max(1.0f, tile.span_w), GRID_CELL_W, GRID_GAP);
   const int card_h = tile_geometry::extent(tile.row, std::max(0.5f, tile.span_h), GRID_CELL_H, GRID_GAP);
@@ -378,6 +385,9 @@ lv_obj_t* render_todo_tile(lv_obj_t* parent, int col, int row, const Tile& tile,
   view->next = g_views;
   g_views = view;
   show(view);
+  // A chosen icon color replaces the open/done coloring (like Scene and
+  // Folder tiles); set after the disc so "Fill" reads it.
+  if (view->own_icon_color) tile_icon_color_rules::apply_fixed(view->icon, tile.icon_colors.c_str());
 
   if (view->entity.length() && grid_type != GridType::SCREENSAVER) {
     const lv_event_code_t popup_event =

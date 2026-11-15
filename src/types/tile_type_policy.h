@@ -89,7 +89,7 @@ static constexpr bool tileTypeAllowedInScreensaver(int type) {
 // Clock, Text): a fixed icon color, and rules only on another entity.
 static constexpr bool tileTypeHasFixedIconColorOnly(int type) {
   return type == TILE_SCENE || type == TILE_FOLDER || type == TILE_BACK || type == TILE_CAMERA ||
-         type == TILE_CLOCK || type == TILE_TEXT;
+         type == TILE_CLOCK || type == TILE_TEXT || type == TILE_TODO;
 }
 
 // Tiles whose rules can use their own entity ("src ... self") as well as
